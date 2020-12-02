@@ -8,15 +8,21 @@ if(CMAKE_BUILD_TYPE MATCHES Release)
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 endif()
 
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+add_subdirectory("lib/catch2")
 
+# This copies the default input text files. 
+# It also configures a header file containing the basic function
+#  signatures and the paths to the input files.
 add_subdirectory("resources")
-add_subdirectory("lib")
 
-include_directories("${CMAKE_CURRENT_BINARY_DIR}" "include")
+include_directories("include" "${CMAKE_BINARY_DIR}/resources")
 
 add_library(adventlib STATIC)
-target_sources(adventlib PRIVATE "src/utils.hpp" "src/utils.cpp" "src/day_1.cpp" "src/day_2.cpp")
+target_sources(adventlib PRIVATE
+    "src/utils.cpp" "src/utils.hpp"
+    "src/day_1.cpp"
+    "src/day_2.cpp"
+    )
 
 add_executable(main)
 target_sources(main PRIVATE "src/main.cpp")

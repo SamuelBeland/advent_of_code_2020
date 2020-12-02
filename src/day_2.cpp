@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <cassert>
 
-#include <resources/resources.hpp>
+#include <resources.hpp>
 
 #include "utils.hpp"
 

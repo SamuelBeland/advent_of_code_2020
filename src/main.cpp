@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <resources/resources.hpp>
+#include <resources.hpp>
 
 //==============================================================================
 // TODO : add some cleaner CLI options.

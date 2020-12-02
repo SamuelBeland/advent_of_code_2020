@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
-#include <catch2>
+#include <catch2.hpp>
 
-#include <resources/resources.hpp>
+#include <resources.hpp>
 
 //==============================================================================
 TEST_CASE("day_1_a")
