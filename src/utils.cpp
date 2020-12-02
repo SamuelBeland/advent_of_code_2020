@@ -9,7 +9,8 @@ std::string read_file(char const * path)
     std::ifstream file{ path };
 
     if (!file.is_open()) {
-        throw std::exception{ "caca" };
+        auto const error{ std::string{ "Can't open file \"" }.append(path).append("\".") };
+        throw std::exception{ error.c_str() };
     }
 
     file.seekg(std::ios::end);

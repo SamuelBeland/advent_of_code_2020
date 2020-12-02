@@ -1,14 +1,21 @@
 #pragma once
 
 #include <array>
+#include <functional>
 #include <string>
 
-struct Day {
-    char const * name;
-    std::string (*function)(char const * input);
-    char const * default_input_file_path;
-};
+namespace inputs {
+	// days
+	@DAYS_INPUTS@
+	// tests
+	@TESTS_INPUTS@
+}
 
 @DAYS_FUNCTIONS@
+
+struct Day {
+	char const * name;
+	std::function<std::string()> function;
+};
 
 @DAYS_DATA@

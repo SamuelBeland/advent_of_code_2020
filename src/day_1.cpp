@@ -1,17 +1,14 @@
 #include <algorithm>
 
-#include <resources/resources.hpp>
-
 #include "utils.hpp"
 
-std::string day_1_a(char const * input)
+std::string day_1_a(const char * input_file_path)
 {
     static constexpr auto TARGET_VALUE = 2020;
 
-    std::string const input_string{ input };
-    auto const words{ split(input_string) };
-
-    auto numbers{ convert_list<int>(words) };
+    auto const input{ read_file(input_file_path) };
+    auto const words{ split(input, '\n') };
+    auto numbers{ convert_words<int>(words) };
 
     std::sort(numbers.begin(), numbers.end());
 
@@ -27,4 +24,9 @@ std::string day_1_a(char const * input)
     }
 
     return std::to_string(*small * *big);
+}
+
+std::string day_1_b(const char * input_file_path)
+{
+    return "coucou";
 }
