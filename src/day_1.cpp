@@ -23,6 +23,7 @@ std::string day_1_a(const char * input_file_path)
         } else {
             --big;
         }
+        assert(small < big);
         sum = *small + *big;
     }
 
@@ -49,8 +50,9 @@ std::string day_1_b(const char * input_file_path)
             small = numbers.cbegin();
             middle = small + 1;
         } else {
-            while (sum < TARGET_VALUE && middle < big) {
+            while (sum < TARGET_VALUE && (middle + 1) < big) {
                 ++middle;
+                assert((small < middle) && (middle < big));
                 sum = *small + *middle + *big;
             }
             if (sum != TARGET_VALUE) {
@@ -58,6 +60,7 @@ std::string day_1_b(const char * input_file_path)
                 middle = small + 1;
             }
         }
+        assert(small < middle && middle < big);
         sum = *small + *middle + *big;
     }
 

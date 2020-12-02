@@ -8,10 +8,7 @@ std::string read_file(char const * path)
 {
     std::ifstream file{ path };
 
-    if (!file.is_open()) {
-        auto const error{ std::string{ "Can't open file \"" }.append(path).append("\".") };
-        throw std::exception{ error.c_str() };
-    }
+    assert(file.is_open());
 
     file.seekg(std::ios::end);
     auto const size{ file.tellg() };
@@ -40,8 +37,12 @@ std::vector<std::string_view> split(std::string const & string, char const separ
         result.emplace_back(begin, end - begin);
         begin = end + 1;
     }
-    auto const size{ std::strlen(begin) };
-    result.emplace_back(begin, size);
+
+    // insert last element
+    auto const length_of_last_element{ std::strlen(begin) };
+    if (length_of_last_element > 0) {
+        result.emplace_back(begin, length_of_last_element);
+    }
 
     return result;
 }

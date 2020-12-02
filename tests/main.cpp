@@ -24,5 +24,5 @@ TEST_CASE("day 2 a")
 TEST_CASE("day 2 b")
 {
     REQUIRE(day_2_b(inputs::TEST_2_A_1) == "1");
-    // REQUIRE(day_2_b(inputs::DAY_2) == "467");
+    REQUIRE(day_2_b(inputs::DAY_2) == "441");
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <charconv>
 #include <string>
 #include <string_view>
@@ -17,7 +18,8 @@ std::vector<T> convert_words(std::vector<std::string_view> const & list)
 
     for (auto const & word : list) {
         T value;
-        std::from_chars(word.data(), word.data() + word.size(), value);
+        [[maybe_unused]] auto const error{ std::from_chars(word.data(), word.data() + word.size(), value) };
+        assert(error.ec == std::errc());
         result.push_back(value);
     }
 
