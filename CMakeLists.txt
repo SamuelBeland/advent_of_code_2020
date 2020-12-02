@@ -10,7 +10,7 @@ add_subdirectory("lib")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}" "include")
 
 add_library(adventlib STATIC)
-target_sources(adventlib PRIVATE "src/utils.hpp" "src/utils.cpp" "src/day_1.cpp")
+target_sources(adventlib PRIVATE "src/utils.hpp" "src/utils.cpp" "src/day_1.cpp" "src/day_2.cpp")
 
 add_executable(advent2020)
 target_sources(advent2020 PRIVATE "src/main.cpp")
