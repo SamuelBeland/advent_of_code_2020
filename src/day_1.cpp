@@ -2,10 +2,10 @@
 
 #include "utils.hpp"
 
+static constexpr auto TARGET_VALUE = 2020;
+
 std::string day_1_a(const char * input_file_path)
 {
-    static constexpr auto TARGET_VALUE = 2020;
-
     auto const input{ read_file(input_file_path) };
     auto const words{ split(input, '\n') };
     auto numbers{ convert_words<int>(words) };
@@ -15,12 +15,15 @@ std::string day_1_a(const char * input_file_path)
     auto small{ numbers.cbegin() };
     auto big{ numbers.cend() - 1 };
 
-    while (*small + *big != TARGET_VALUE) {
+    auto sum{ *small + *big };
+
+    while (sum != TARGET_VALUE) {
         if (*small + *big < TARGET_VALUE) {
-            small += 1;
+            ++small;
         } else {
-            big -= 1;
+            --big;
         }
+        sum = *small + *big;
     }
 
     return std::to_string(*small * *big);
@@ -28,5 +31,35 @@ std::string day_1_a(const char * input_file_path)
 
 std::string day_1_b(const char * input_file_path)
 {
-    return "coucou";
+    auto const input{ read_file(input_file_path) };
+    auto const words{ split(input, '\n') };
+    auto numbers{ convert_words<int>(words) };
+
+    std::sort(numbers.begin(), numbers.end());
+
+    auto small{ numbers.cbegin() };
+    auto middle{ small + 1 };
+    auto big{ numbers.cend() - 1 };
+
+    auto sum{ *small + *middle + *big };
+
+    while (sum != TARGET_VALUE) {
+        if (sum > TARGET_VALUE) {
+            --big;
+            small = numbers.cbegin();
+            middle = small + 1;
+        } else {
+            while (sum < TARGET_VALUE && middle < big) {
+                ++middle;
+                sum = *small + *middle + *big;
+            }
+            if (sum != TARGET_VALUE) {
+                ++small;
+                middle = small + 1;
+            }
+        }
+        sum = *small + *middle + *big;
+    }
+
+    return std::to_string(*small * *middle * *big);
 }
