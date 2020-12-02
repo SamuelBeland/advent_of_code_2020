@@ -40,7 +40,8 @@ std::vector<std::string_view> split(std::string const & string, char const separ
         result.emplace_back(begin, end - begin);
         begin = end + 1;
     }
-    result.emplace_back(begin, string.size());
+    auto const size{ std::strlen(begin) };
+    result.emplace_back(begin, size);
 
     return result;
 }
