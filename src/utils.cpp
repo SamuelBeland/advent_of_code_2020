@@ -1,6 +1,7 @@
 #include "utils.hpp"
 
 #include <algorithm>
+#include <cstring>
 #include <exception>
 #include <fstream>
 

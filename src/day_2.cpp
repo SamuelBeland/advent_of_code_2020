@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <cassert>
-#include <execution>
 
 #include <resources/resources.hpp>
 
@@ -67,10 +66,9 @@ std::string day_2_a(char const * input_file_path)
 
     std::vector<Entry> entries{ lines.size() };
     std::transform(lines.begin(), lines.end(), entries.begin(), parse_entry);
-    auto const count{ std::count_if(std::execution::seq,
-                                    entries.begin(),
-                                    entries.end(),
-                                    [](Entry const & entry) -> bool { return is_valid_day_2_a_entry(entry); }) };
+    auto const count{ std::count_if(entries.begin(), entries.end(), [](Entry const & entry) -> bool {
+        return is_valid_day_2_a_entry(entry);
+    }) };
 
     return std::to_string(count);
 }
