@@ -6,12 +6,15 @@
 #include <string_view>
 #include <vector>
 
+//==============================================================================
 std::string read_file(char const * path);
 
+//==============================================================================
 std::vector<std::string_view> split(std::string const & string, char separator = '\n');
 
+//==============================================================================
 template<typename T>
-std::vector<T> convert_words(std::vector<std::string_view> const & list)
+std::vector<T> parse_numbers(std::vector<std::string_view> const & list)
 {
     std::vector<T> result{};
     result.reserve(list.size());

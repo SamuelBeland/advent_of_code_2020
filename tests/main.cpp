@@ -3,6 +3,7 @@
 
 #include <resources/resources.hpp>
 
+//==============================================================================
 TEST_CASE("day_1_a")
 {
     REQUIRE(day_1_a(inputs::TEST_1_A_1) == "514579");
@@ -15,6 +16,7 @@ TEST_CASE("day_1_b")
     REQUIRE(day_1_b(inputs::DAY_1) == "195700142");
 }
 
+//==============================================================================
 TEST_CASE("day_2_a")
 {
     REQUIRE(day_2_a(inputs::TEST_2_A_1) == "2");
@@ -27,6 +29,7 @@ TEST_CASE("day_2_b")
     REQUIRE(day_2_b(inputs::DAY_2) == "441");
 }
 
+//==============================================================================
 #ifdef NDEBUG
 TEST_CASE("Benchmarks")
 {

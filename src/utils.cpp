@@ -2,9 +2,9 @@
 
 #include <algorithm>
 #include <cstring>
-#include <exception>
 #include <fstream>
 
+//==============================================================================
 std::string read_file(char const * path)
 {
     std::ifstream file{ path };
@@ -14,12 +14,15 @@ std::string read_file(char const * path)
     file.seekg(std::ios::end);
     auto const size{ file.tellg() };
     file.seekg(std::ios::beg);
+
     std::string result{};
     result.reserve(size);
+
     result.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
     return result;
 }
 
+//==============================================================================
 std::vector<std::string_view> split(std::string const & string, char const separator)
 {
     // locate separators
@@ -30,6 +33,7 @@ std::vector<std::string_view> split(std::string const & string, char const separ
         }
     });
 
+    // insert separated string_views
     std::vector<std::string_view> result{};
     result.reserve(separators_ptr.size() + 1);
 
