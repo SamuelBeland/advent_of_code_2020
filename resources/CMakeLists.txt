@@ -1,10 +1,10 @@
 set(INPUTS_DIR "${CMAKE_BINARY_DIR}/inputs")
 
+# Default inputs
 file(COPY "days" DESTINATION "${INPUTS_DIR}")
 file(GLOB INPUT_DAYS_FILES
     "${INPUTS_DIR}/days/*"
 )
-
 foreach(INPUT_DAY_FILE ${INPUT_DAYS_FILES})
     get_filename_component(DEFAULT_INPUT_FILE "${INPUT_DAY_FILE}" NAME)
     set(DEFAULT_INPUT_FILE "inputs/days/${DEFAULT_INPUT_FILE}")
@@ -42,6 +42,7 @@ foreach(INPUT_DAY_FILE ${INPUT_DAYS_FILES})
 endforeach()
 set(DAYS_DATA "${DAYS_DATA}\n};")
 
+# Test inputs
 file(COPY "tests" DESTINATION "${INPUTS_DIR}")
 file(GLOB FILES "${INPUTS_DIR}/tests/*")
 foreach(FILE ${FILES})
