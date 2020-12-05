@@ -43,6 +43,24 @@ TEST_CASE("day_3_b")
 }
 
 //==============================================================================
+TEST_CASE("day_4_a")
+{
+    REQUIRE(day_4_a(inputs::TEST_4_A_1) == "2");
+    REQUIRE(day_4_a(inputs::DAY_4) == "264");
+}
+
+TEST_CASE("day_4_b")
+{
+    REQUIRE(day_4_b(inputs::TEST_4_B_1) == "0");
+    REQUIRE(day_4_b(inputs::TEST_4_B_2) == "4");
+}
+
+// TEST_CASE("day_4_b")
+//{
+//
+//}
+
+//==============================================================================
 #ifdef NDEBUG
 TEST_CASE("Benchmarks")
 {

@@ -11,6 +11,7 @@ std::string read_file(char const * path);
 
 //==============================================================================
 std::vector<std::string_view> split(std::string const & string, char separator = '\n');
+std::vector<std::string_view> split(std::string const & string, std::string const & separator);
 
 //==============================================================================
 template<typename T>

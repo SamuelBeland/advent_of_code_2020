@@ -51,3 +51,33 @@ std::vector<std::string_view> split(std::string const & string, char const separ
 
     return result;
 }
+
+//==============================================================================
+std::vector<std::string_view> split(std::string const & string, std::string const & separator)
+{
+    // locate separators
+    std::vector<char const *> separators_ptr{};
+    size_t current_index{ string.find(separator) };
+    while (current_index != std::string::npos) {
+        separators_ptr.push_back(string.data() + current_index);
+        current_index = string.find(separator, current_index + separator.size());
+    }
+
+    // insert separated string_views
+    std::vector<std::string_view> result{};
+    result.reserve(separators_ptr.size() + 1);
+
+    auto const * begin{ string.c_str() };
+    for (auto const * end : separators_ptr) {
+        result.emplace_back(begin, end - begin);
+        begin = end + separator.size();
+    }
+
+    // insert last element
+    auto const length_of_last_element{ std::strlen(begin) };
+    if (length_of_last_element > 0) {
+        result.emplace_back(begin, length_of_last_element);
+    }
+
+    return result;
+}
