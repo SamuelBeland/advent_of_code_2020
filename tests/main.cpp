@@ -53,6 +53,7 @@ TEST_CASE("day_4_b")
 {
     REQUIRE(day_4_b(inputs::TEST_4_B_1) == "0");
     REQUIRE(day_4_b(inputs::TEST_4_B_2) == "4");
+    REQUIRE(day_4_b(inputs::DAY_4) == "224");
 }
 
 // TEST_CASE("day_4_b")
