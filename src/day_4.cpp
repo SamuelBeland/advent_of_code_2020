@@ -37,9 +37,6 @@ bool is_eyr_valid(std::string_view const & string)
 }
 
 //==============================================================================
-enum class Height_Unit { cm, in };
-
-//==============================================================================
 bool is_hgt_valid(std::string_view const & string)
 {
     auto const cm_begin{ string.find("cm") };
@@ -124,15 +121,15 @@ bool has_all_mandatory_fields(std::string_view const & entry)
 //==============================================================================
 bool satisfies_constraint(std::string_view const & entry, Constraint const & constraint)
 {
-    static constexpr std::array<char, 2> VALUE_STOP_CHARS{ ' ', '\n' };
+    static constexpr std::array<char, 2> STOP_CHARS{ ' ', '\n' };
 
-    auto const find_result{ entry.find(constraint.id) };
-    if (find_result == std::string_view::npos) {
+    auto const stop_char_index{ entry.find(constraint.id) };
+    if (stop_char_index == std::string_view::npos) {
         return false;
     }
-    auto const * const value_begin{ entry.data() + find_result + constraint.id.size() };
+    auto const * const value_begin{ entry.data() + stop_char_index + constraint.id.size() };
     auto const * const value_end{
-        std::find_first_of(value_begin, entry.data() + entry.size(), VALUE_STOP_CHARS.cbegin(), VALUE_STOP_CHARS.cend())
+        std::find_first_of(value_begin, entry.data() + entry.size(), STOP_CHARS.cbegin(), STOP_CHARS.cend())
     };
     std::string_view const value_string{ value_begin, static_cast<size_t>(value_end - value_begin) };
     auto const is_valid{ constraint.validate(value_string) };
@@ -140,10 +137,10 @@ bool satisfies_constraint(std::string_view const & entry, Constraint const & con
 }
 
 //==============================================================================
-bool is_valid_entry(std::string_view const & entry)
+bool satisfies_all_constraints(std::string_view const & entry)
 {
     auto const test_constraint
-        = [&entry](Constraint const & constraint) { return satisfies_constraint(entry, constraint); };
+        = [&entry](Constraint const & constraint) -> bool { return satisfies_constraint(entry, constraint); };
 
     return std::all_of(CONSTRAINTS.cbegin(), CONSTRAINTS.cend(), test_constraint);
 }
@@ -162,7 +159,6 @@ std::string day_4_b(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
     auto const entries{ split(input, "\n\n") };
-    auto const count{ std::count_if(entries.cbegin(), entries.cend(), is_valid_entry) };
-
-    return std::to_string(count);
+    auto const valid_count{ std::count_if(entries.cbegin(), entries.cend(), satisfies_all_constraints) };
+    return std::to_string(valid_count);
 }

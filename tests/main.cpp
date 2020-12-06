@@ -56,10 +56,21 @@ TEST_CASE("day_4_b")
     REQUIRE(day_4_b(inputs::DAY_4) == "224");
 }
 
-// TEST_CASE("day_4_b")
-//{
-//
-//}
+//==============================================================================
+TEST_CASE("day_5_a")
+{
+    REQUIRE(day_5_a(inputs::TEST_5_A_1) == "0");
+    REQUIRE(day_5_a(inputs::TEST_5_A_2) == "1023");
+    REQUIRE(day_5_a(inputs::TEST_5_A_3) == "119");
+    REQUIRE(day_5_a(inputs::TEST_5_A_4) == "567");
+    REQUIRE(day_5_a(inputs::TEST_5_A_5) == "820");
+    REQUIRE(day_5_a(inputs::DAY_5) == "861");
+}
+
+TEST_CASE("day_5_b")
+{
+    REQUIRE(day_5_b(inputs::DAY_5) == "633");
+}
 
 //==============================================================================
 #ifdef NDEBUG
