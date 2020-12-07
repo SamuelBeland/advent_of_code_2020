@@ -86,11 +86,29 @@ TEST_CASE("day_6_b")
 }
 
 //==============================================================================
+TEST_CASE("day_7_a")
+{
+}
+
+TEST_CASE("day_7_b")
+{
+}
+
+//==============================================================================
 #ifdef NDEBUG
 TEST_CASE("Benchmarks")
 {
     for (auto const & day : DAYS) {
         BENCHMARK(day.name) { return day.function(); };
     }
+
+    BENCHMARK("ALL")
+    {
+        std::string result;
+        for (auto const & day : DAYS) {
+            result = day.function();
+        }
+        return result;
+    };
 }
 #endif
