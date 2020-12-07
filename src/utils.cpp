@@ -44,7 +44,7 @@ std::vector<std::string_view> split(std::string_view const & string, char const 
     }
 
     // insert last element
-    auto const length_of_last_element{ std::strlen(begin) };
+    auto const length_of_last_element{ string.data() + string.size() - begin };
     if (length_of_last_element > 0) {
         result.emplace_back(begin, length_of_last_element);
     }
