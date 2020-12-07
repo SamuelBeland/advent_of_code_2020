@@ -88,6 +88,8 @@ TEST_CASE("day_6_b")
 //==============================================================================
 TEST_CASE("day_7_a")
 {
+    REQUIRE(day_7_a(inputs::TEST_7_A_1) == "4");
+    REQUIRE(day_7_a(inputs::DAY_7) == "229");
 }
 
 TEST_CASE("day_7_b")
