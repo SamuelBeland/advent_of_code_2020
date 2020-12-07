@@ -10,8 +10,8 @@
 std::string read_file(char const * path);
 
 //==============================================================================
-std::vector<std::string_view> split(std::string const & string, char separator = '\n');
-std::vector<std::string_view> split(std::string const & string, std::string const & separator);
+std::vector<std::string_view> split(std::string_view const & string, char separator = '\n');
+std::vector<std::string_view> split(std::string_view const & string, std::string_view const & separator);
 
 //==============================================================================
 template<typename T>

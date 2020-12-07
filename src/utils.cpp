@@ -23,11 +23,11 @@ std::string read_file(char const * path)
 }
 
 //==============================================================================
-std::vector<std::string_view> split(std::string const & string, char const separator)
+std::vector<std::string_view> split(std::string_view const & string, char const separator)
 {
     // locate separators
     std::vector<char const *> separators_ptr{};
-    std::for_each(string.c_str(), string.c_str() + string.size(), [&separators_ptr, separator](char const & character) {
+    std::for_each(string.cbegin(), string.cend(), [&separators_ptr, separator](char const & character) {
         if (character == separator) {
             separators_ptr.push_back(&character);
         }
@@ -37,7 +37,7 @@ std::vector<std::string_view> split(std::string const & string, char const separ
     std::vector<std::string_view> result{};
     result.reserve(separators_ptr.size() + 1);
 
-    auto const * begin{ string.c_str() };
+    auto const * begin{ string.data() };
     for (auto const * end : separators_ptr) {
         result.emplace_back(begin, end - begin);
         begin = end + 1;
@@ -53,7 +53,7 @@ std::vector<std::string_view> split(std::string const & string, char const separ
 }
 
 //==============================================================================
-std::vector<std::string_view> split(std::string const & string, std::string const & separator)
+std::vector<std::string_view> split(std::string_view const & string, std::string_view const & separator)
 {
     // locate separators
     std::vector<char const *> separators_ptr{};
@@ -67,7 +67,7 @@ std::vector<std::string_view> split(std::string const & string, std::string cons
     std::vector<std::string_view> result{};
     result.reserve(separators_ptr.size() + 1);
 
-    auto const * begin{ string.c_str() };
+    auto const * begin{ string.data() };
     for (auto const * end : separators_ptr) {
         result.emplace_back(begin, end - begin);
         begin = end + separator.size();
