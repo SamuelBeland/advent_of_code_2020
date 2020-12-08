@@ -51,9 +51,8 @@ static constexpr auto TARGET_VALUE = 2020;
 std::string day_1_a(const char * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
-    auto const words{ split(input, '\n') };
-    auto numbers{ parse_numbers<int>(words) };
-
+    std::vector<int> numbers;
+    scan_list(input, numbers, "\n");
     std::sort(numbers.begin(), numbers.end());
 
     auto small{ numbers.cbegin() };
@@ -78,9 +77,8 @@ std::string day_1_a(const char * input_file_path)
 std::string day_1_b(const char * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
-    auto const words{ split(input, '\n') };
-    auto numbers{ parse_numbers<int>(words) };
-
+    std::vector<int> numbers;
+    scan_list(input, numbers, "\n");
     std::sort(numbers.begin(), numbers.end());
 
     auto small{ numbers.cbegin() };

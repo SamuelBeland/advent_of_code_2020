@@ -103,6 +103,7 @@ TEST_CASE("day_7_b")
 #ifdef NDEBUG
 TEST_CASE("Benchmarks")
 {
+    // BENCHMARK("coucou") { return day_7_a(inputs::DAY_7); };
     for (auto const & day : DAYS) {
         BENCHMARK(day.name) { return day.function(); };
     }

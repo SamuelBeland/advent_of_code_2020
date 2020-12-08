@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <numeric>
 #include <optional>
 #include <set>
 
@@ -8,46 +7,27 @@
 
 using color_id_t = unsigned;
 
-template<typename T, size_t MAX_SIZE>
-class Static_Vector
-{
-    std::array<T, MAX_SIZE> m_data;
-    size_t m_size{};
-
-public:
-    T * begin() { return m_data.data(); }
-    T * end() { return m_data.data() + m_size; }
-    T const * begin() const { return m_data.data(); }
-    T const * end() const { return m_data.data() + m_size; }
-    T const * cbegin() const { return m_data.data(); }
-    T const * cend() const { return m_data.data() + m_size; }
-
-    T & push_back(T const & new_element)
-    {
-        assert(m_size < MAX_SIZE);
-        return m_data[m_size++] = new_element;
-    }
-
-    size_t size() const { return m_size; }
-};
-
 template<typename T>
 struct Color_Ownership {
     T color;
     unsigned quantity;
 };
 
+static constexpr size_t MAX_OWNED = 4;
+static constexpr size_t MAX_OWNERS = 32;
+
 struct Color_Info {
     color_id_t id;
-    Static_Vector<Color_Ownership<color_id_t>, 4> colors_contained_by_me;
-    Static_Vector<Color_Ownership<color_id_t>, 32> colors_that_contain_me;
+    Static_Vector<Color_Ownership<color_id_t>, MAX_OWNED> colors_contained_by_me;
+    Static_Vector<Color_Ownership<color_id_t>, MAX_OWNERS> colors_that_contain_me;
 };
 
 struct Rule {
     std::string_view color;
-    Static_Vector<Color_Ownership<std::string_view>, 4> owned_colors;
+    Static_Vector<Color_Ownership<std::string_view>, MAX_OWNED> owned_colors;
 };
 
+//==============================================================================
 class Color_Graph
 {
     std::unordered_map<std::string_view, color_id_t> m_color_names_to_color_ids{};
@@ -109,13 +89,13 @@ public:
         std::vector<std::optional<unsigned>> bags_contained_in_colors{};
         bags_contained_in_colors.resize(m_color_infos.size());
 
-        std::function<void(color_id_t)> computer_number_of_bags_in_bag
-            = [this, &bags_contained_in_colors, &computer_number_of_bags_in_bag](color_id_t const target_id) {
+        std::function<void(color_id_t)> compute_number_of_bags_in_bag
+            = [this, &bags_contained_in_colors, &compute_number_of_bags_in_bag](color_id_t const target_id) {
                   unsigned count{ 1 };
                   if (m_color_infos[target_id].colors_contained_by_me.size() > 0) {
                       for (auto const contained_colors : m_color_infos[target_id].colors_contained_by_me) {
                           if (!bags_contained_in_colors[contained_colors.color]) {
-                              computer_number_of_bags_in_bag(contained_colors.color);
+                              compute_number_of_bags_in_bag(contained_colors.color);
                           }
                           count += contained_colors.quantity * bags_contained_in_colors[contained_colors.color].value();
                       }
@@ -123,8 +103,8 @@ public:
                   bags_contained_in_colors[target_id] = count;
               };
 
-        computer_number_of_bags_in_bag(target_id);
-        return bags_contained_in_colors[target_id].value() - 1;
+        compute_number_of_bags_in_bag(target_id);
+        return bags_contained_in_colors[target_id].value() - 1; // -1 to exclude the current bag
     }
 
 private:
@@ -148,52 +128,25 @@ private:
         auto const emplace_result{ m_color_names_to_color_ids.try_emplace(color_name, m_next_id) };
         if (emplace_result.second) {
             // insertion took place : new color
-            m_color_infos.push_back(Color_Info{ m_next_id++, {}, {} });
+            m_color_infos.emplace_back(Color_Info{ m_next_id++, {}, {} });
         }
         return emplace_result.first->second;
     }
     //==============================================================================
     static Rule parse_rule(std::string_view const & line)
     {
-        static constexpr std::string_view SEP_1 = " bags contain ";
-        static constexpr std::string_view SEP_2 = " bag";
-        static constexpr std::string_view NO_BAGS_TAG = "no other bags.";
-
         Rule rule;
+        std::string_view leftover;
+        scan(line, "{} bags contain {}.", rule.color, leftover);
 
-        auto const * const color_start{ line.data() };
-        auto const color_length{ line.find(SEP_1) };
-        rule.color = std::string_view{ color_start, color_length };
-
-        if (line.find(NO_BAGS_TAG) == std::string_view::npos) {
-            // there are contained bags
-            auto const * parse_ptr{ line.data() + color_length + SEP_1.size() };
-            auto const * const line_end{ line.data() + line.size() };
-            do {
-                auto const * const quantity_begin{ parse_ptr };
-                auto const * const quantity_end{ std::find(quantity_begin, line_end, ' ') };
-                assert(quantity_end < line_end);
-                auto const * const owned_color_begin{ quantity_end + 1 };
-                auto const * const owned_color_end{
-                    std::search(owned_color_begin, line_end, SEP_2.cbegin(), SEP_2.cend())
-                };
-                assert(owned_color_end < line_end);
-                auto const owned_color_length{ static_cast<size_t>(owned_color_end - owned_color_begin) };
-
-                unsigned quantity;
-                [[maybe_unused]] auto const from_char_result{ std::from_chars(quantity_begin, quantity_end, quantity) };
-                assert(from_char_result.ec == std::errc());
-
-                Color_Ownership<std::string_view> const owned_color{ std::string_view{ owned_color_begin,
-                                                                                       owned_color_length },
-                                                                     quantity };
-                rule.owned_colors.push_back(owned_color);
-
-                parse_ptr = owned_color_end + SEP_2.size() + 2;
-                if (quantity > 1) {
-                    ++parse_ptr;
-                }
-            } while (parse_ptr < line_end);
+        if (leftover != "no other bags") {
+            Static_Vector<std::string_view, MAX_OWNED> contained_strings;
+            scan_list(leftover, contained_strings, ", ");
+            for (auto const & contained_string : contained_strings) {
+                Color_Ownership<std::string_view> ownership;
+                scan(contained_string, "{} {} bag", ownership.quantity, ownership.color);
+                rule.owned_colors.push_back(ownership);
+            }
         }
 
         return rule;

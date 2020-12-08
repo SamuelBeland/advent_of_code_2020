@@ -70,28 +70,13 @@ struct Entry {
 //==============================================================================
 Entry parse_entry(std::string_view const & line)
 {
-    static constexpr auto MIN_MAX_SEPARATOR = '-';
-    static constexpr auto MAX_CHAR_SEPARATOR = ' ';
-
-    auto const min_begin{ line.cbegin() };
-    auto const min_end{ std::find(min_begin, line.cend(), MIN_MAX_SEPARATOR) };
-    auto const max_begin{ min_end + 1 };
-    auto const max_end{ std::find(max_begin, line.cend(), MAX_CHAR_SEPARATOR) };
-    auto const character{ max_end + 1 };
-    auto const password_begin{ character + 3 };
-
-    int min;
-    [[maybe_unused]] auto from_char_result{ std::from_chars(&*min_begin, &*min_end, min) };
-    assert(from_char_result.ec == std::errc());
-
-    int max;
-    from_char_result = std::from_chars(&*max_begin, &*max_end, max);
-    assert(from_char_result.ec == std::errc());
-
-    Password_Policy const password_policy{ *character, min, max };
-    auto const password_size{ static_cast<size_t>(line.cend() - password_begin) };
-    std::string_view const password{ &*password_begin, password_size };
-    Entry const entry{ password_policy, password };
+    Entry entry;
+    scan(line,
+         "{}-{} {}: {}",
+         entry.password_policy.param_1,
+         entry.password_policy.param_2,
+         entry.password_policy.character,
+         entry.password);
 
     return entry;
 }
