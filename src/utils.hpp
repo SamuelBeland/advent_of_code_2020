@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cassert>
 #include <charconv>
 #include <string>
@@ -132,7 +133,7 @@ void scan_list(std::string_view const & string, T & collection, std::string_view
         end = string.find(separator, begin);
     }
     if (begin < string.size()) {
-        T::value_type item;
+        typename T::value_type item;
         auto const value_string{ string.substr(begin) };
         copy_or_parse(value_string, item);
         collection.push_back(item);

@@ -64,7 +64,7 @@ public:
 
         std::set<color_id_t> colors_that_own_target{};
 
-        const std::function<void(color_id_t)> const register_owners
+        std::function<void(color_id_t)> const register_owners
             = [this, &colors_that_own_target, &register_owners](color_id_t const target_id) {
                   for (auto const & owner : m_color_infos[target_id].colors_that_contain_me) {
                       auto const emplace_result{ colors_that_own_target.emplace(owner.color) };
