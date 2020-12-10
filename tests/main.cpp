@@ -1,5 +1,6 @@
 #define CATCH_CONFIG_MAIN
-#include <catch2.hpp>
+//#include <catch2.hpp>
+#include "../lib/catch2/catch_amalgamated.hpp"
 
 #include <resources.hpp>
 
@@ -103,6 +104,7 @@ TEST_CASE("day_7_b")
 TEST_CASE("day_8_a")
 {
     REQUIRE(day_8_a(inputs::TEST_8_A_1) == "5");
+    REQUIRE(day_8_a(inputs::DAY_8) == "1671");
 }
 
 //==============================================================================
