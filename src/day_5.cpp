@@ -63,14 +63,14 @@
 #include "utils.hpp"
 #include <resources.hpp>
 
-using id_t = int;
+using seat_id_t = int;
 
 //==============================================================================
-id_t get_id(std::string_view const & seat)
+seat_id_t get_id(std::string_view const & seat)
 {
     assert(seat.size() == 10);
 
-    id_t result{};
+    seat_id_t result{};
     std::for_each(seat.cbegin(), seat.cend(), [&result](char const character) {
         result <<= 1;
         if (character == 'B' || character == 'R') {
@@ -87,7 +87,7 @@ std::string day_5_a(char const * input_file_path)
     auto const input{ read_file(input_file_path) };
     auto const lines{ split(input) };
 
-    std::vector<id_t> ids{};
+    std::vector<seat_id_t> ids{};
     ids.resize(lines.size());
     std::transform(lines.cbegin(), lines.cend(), ids.begin(), get_id);
     auto const max_id{ *std::max_element(ids.cbegin(), ids.cend()) };
@@ -101,7 +101,7 @@ std::string day_5_b(char const * input_file_path)
     auto const input{ read_file(input_file_path) };
     auto const lines{ split(input) };
 
-    std::vector<id_t> ids{};
+    std::vector<seat_id_t> ids{};
     ids.resize(lines.size());
     std::transform(lines.cbegin(), lines.cend(), ids.begin(), get_id);
     std::sort(ids.begin(), ids.end());
