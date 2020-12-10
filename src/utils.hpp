@@ -16,17 +16,35 @@ std::vector<std::string_view> split(std::string_view const & string, char separa
 std::vector<std::string_view> split(std::string_view const & string, std::string_view const & separator);
 
 //==============================================================================
-template<typename T>
-std::vector<T> parse_number_list(std::vector<std::string_view> const & list)
+template<typename T, typename Coll>
+std::vector<T> parse_number_list(Coll const & collection)
 {
     std::vector<T> result{};
-    result.reserve(list.size());
+    result.reserve(collection.size());
 
-    for (auto const & word : list) {
+    for (auto const & word : collection) {
         T value;
         [[maybe_unused]] auto const error{ std::from_chars(word.data(), word.data() + word.size(), value) };
         assert(error.ec == std::errc());
         result.push_back(value);
+    }
+
+    return result;
+}
+
+//==============================================================================
+template<typename T, typename It>
+std::vector<T> parse_number_list(It begin, It const end)
+{
+    std::vector<T> result{};
+    result.reserve(static_cast<size_t>(end - begin));
+
+    while (begin != end) {
+        T value;
+        [[maybe_unused]] auto const error{ std::from_chars(begin->data(), begin->data() + begin->size(), value) };
+        assert(error.ec == std::errc());
+        result.push_back(value);
+        ++begin;
     }
 
     return result;
@@ -106,7 +124,8 @@ void scan(std::string_view const & string, std::string_view const & format, T & 
     auto const * const string_begin{ string.data() };
     auto const * const string_end{ string.data() + string.size() };
 
-    auto const * const value_begin{ std::search(string_begin, string_end, prefix.cbegin(), prefix.cend()) };
+    auto const * const value_begin{ std::search(string_begin, string_end, prefix.cbegin(), prefix.cend())
+                                    + prefix_length };
     auto const * const value_end{ suffix_length ? std::search(value_begin, string_end, suffix.cbegin(), suffix.cend())
                                                 : string_end };
     auto const value_length{ static_cast<size_t>(value_end - value_begin) };
