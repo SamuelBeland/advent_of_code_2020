@@ -116,16 +116,15 @@ TEST_CASE("day_8_b")
 #ifdef NDEBUG
 TEST_CASE("Benchmarks")
 {
-    // BENCHMARK("coucou") { return day_7_a(inputs::DAY_7); };
-    for (auto const & day : DAYS) {
-        BENCHMARK(day.name) { return day.function(); };
+    for (auto day_it{ DAYS.crbegin() }; day_it != DAYS.crend(); ++day_it) {
+        BENCHMARK(day_it->name) { return day_it->function(); };
     }
 
     BENCHMARK("ALL")
     {
         std::string result;
         for (auto const & day : DAYS) {
-            result = day.function();
+            result.append(day.function());
         }
         return result;
     };
