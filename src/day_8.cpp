@@ -80,7 +80,55 @@ class Console
 
 public:
     //==============================================================================
+    enum class Debug_Code { no_error, infinite_loop };
+    //==============================================================================
     Console(Memory memory) : m_memory(std::move(memory)) {}
+    //==============================================================================
+    Debug_Code debug()
+    {
+        std::vector<bool> visited_addresses{};
+        visited_addresses.resize(m_memory.size());
+
+        while (m_stack_pointer < m_memory.size() && !visited_addresses[m_stack_pointer]) {
+            visited_addresses[m_stack_pointer] = true;
+            execute_instruction(m_memory[m_stack_pointer]);
+        }
+        assert(m_stack_pointer <= m_memory.size());
+        return m_stack_pointer == m_memory.size() ? Debug_Code::no_error : Debug_Code::infinite_loop;
+    }
+    //==============================================================================
+    void fix_corrupted_instruction()
+    {
+        auto const swap_operations = [this](size_t const & address) {
+            auto & operation{ m_memory[address].operation };
+            assert(operation == Operation::jmp || operation == Operation::nop);
+            operation = (operation == Operation::jmp ? Operation::nop : Operation::jmp);
+        };
+
+        auto const get_next_jmp_or_nop_address = [this](size_t stack_pointer) {
+            while (m_memory[stack_pointer].operation != Operation::jmp
+                   && m_memory[stack_pointer].operation != Operation::nop) {
+                ++stack_pointer;
+            }
+            return stack_pointer;
+        };
+
+        auto debug_cursor{ get_next_jmp_or_nop_address(0) };
+        swap_operations(debug_cursor);
+        auto debug_code{ debug() };
+        while (debug_code != Debug_Code::no_error) {
+            swap_operations(debug_cursor);
+            debug_cursor = get_next_jmp_or_nop_address(debug_cursor + 1);
+            swap_operations(debug_cursor);
+            m_stack_pointer = 0;
+            m_accumulator = 0;
+            debug_code = debug();
+        }
+    }
+    //==============================================================================
+    argument_t get_accumulator_value() const { return m_accumulator; }
+
+private:
     //==============================================================================
     void execute_instruction(Instruction const & instruction)
     {
@@ -99,19 +147,6 @@ public:
             assert(false);
         }
     }
-    //==============================================================================
-    void run_until_infinite_loop()
-    {
-        std::vector<bool> visited_addresses{};
-        visited_addresses.resize(m_memory.size());
-
-        while (!visited_addresses[m_stack_pointer]) {
-            visited_addresses[m_stack_pointer] = true;
-            execute_instruction(m_memory[m_stack_pointer]);
-        }
-    }
-    //==============================================================================
-    argument_t get_accumulator_value() const { return m_accumulator; }
 };
 
 //==============================================================================
@@ -119,7 +154,7 @@ std::string day_8_a(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
     Console console{ parse_memory(input) };
-    console.run_until_infinite_loop();
+    console.debug();
     auto const accumulator_value{ console.get_accumulator_value() };
     return std::to_string(accumulator_value);
 }
@@ -127,5 +162,9 @@ std::string day_8_a(char const * input_file_path)
 //==============================================================================
 std::string day_8_b(char const * input_file_path)
 {
-    return "day_8_b not implemented!";
+    auto const input{ read_file(input_file_path) };
+    Console console{ parse_memory(input) };
+    console.fix_corrupted_instruction();
+    auto const result{ console.get_accumulator_value() };
+    return std::to_string(result);
 }
