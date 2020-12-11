@@ -28,7 +28,8 @@ target_sources(adventlib PRIVATE
     "src/day_6.cpp"
     "src/day_7.cpp"
     "src/day_8.cpp"
-    "src/day_9.cpp")
+    "src/day_9.cpp"
+    "src/day_10.cpp")
 
 add_executable(main)
 target_sources(main PRIVATE "src/main.cpp")
