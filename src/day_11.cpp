@@ -7,11 +7,6 @@ class Ferry
 public:
     enum class Tile { floor, empty, occupied };
 
-    class Neighbor_Iterator
-    {
-    public:
-    };
-
 private:
     //==============================================================================
     size_t m_width;

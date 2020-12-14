@@ -149,12 +149,13 @@ TEST_CASE("day_11_a")
     REQUIRE(day_11_a(inputs::DAY_11) == "2247");
 }
 
-// TEST_CASE("day_11_b")
-//{
-//    REQUIRE(day_11_b(inputs::TEST_11_A_1) == "8");
-//    REQUIRE(day_11_b(inputs::TEST_11_A_2) == "19208");
-//    REQUIRE(day_11_b(inputs::DAY_11) == "3947645370368");
-//}
+TEST_CASE("day_11_b")
+{
+    REQUIRE(day_11_b(inputs::TEST_11_A_1) == "1");
+    REQUIRE(day_11_b(inputs::TEST_11_A_2) == "4");
+    REQUIRE(day_11_b(inputs::TEST_11_A_3) == "26");
+    // REQUIRE(day_11_b(inputs::DAY_11) == "3947645370368");
+}
 
 //==============================================================================
 #ifdef NDEBUG
