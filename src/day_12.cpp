@@ -69,9 +69,9 @@
 // 10 units east and 4 units north of the ship.The ship remains at east 100, north 10. F7 moves the ship to the waypoint
 // 7 times(a total of 70 units east and 28 units north), leaving the ship at east 170, north 38. The waypoint stays 10
 // units east and 4 units north of the ship. R90 rotates the waypoint around the ship clockwise 90 degrees, moving it to
-// 4 units east and 10 units south of the ship.The ship remains at east 170, north 38. F11 moves the ship to the waypoint
-// 11 times(a total of 44 units east and 110 units south), leaving the ship at east 214, south 72. The waypoint stays 4
-// units east and 10 units south of the ship.
+// 4 units east and 10 units south of the ship.The ship remains at east 170, north 38. F11 moves the ship to the
+// waypoint 11 times(a total of 44 units east and 110 units south), leaving the ship at east 214, south 72. The waypoint
+// stays 4 units east and 10 units south of the ship.
 //
 // After these operations, the ship's Manhattan distance from its starting position is 214 + 72 = 286.
 //
@@ -105,12 +105,10 @@ Step parse_step(std::string_view const & line)
 
 enum class Direction { north, east, south, west, MAX };
 
-struct Position {
+struct Point {
     int x;
     int y;
-    Direction direction;
 
-    void advance(int const amount) { advance(amount, direction); }
     void advance(int const amount, Direction const direction_)
     {
         switch (direction_) {
@@ -129,6 +127,44 @@ struct Position {
         }
         assert(false);
     }
+    Point & rotate_around_origin(int const angle, bool const clockwise)
+    {
+        static constexpr auto MAX_DIRECTION{ static_cast<int>(Direction::MAX) };
+
+        assert(angle % 90 == 0 && angle >= 0 && angle <= 270);
+        auto const number_of_rotations{ angle / 90 };
+
+        for (int i{}; i < number_of_rotations; ++i) {
+            if (clockwise) {
+                y *= -1;
+                std::swap(x, y);
+            } else {
+                std::swap(x, y);
+                y *= -1;
+            }
+        }
+
+        return *this;
+    }
+
+    Point operator*(int const amount) const
+    {
+        Point const result{ x * amount, y * amount };
+        return result;
+    }
+    Point & operator+=(Point const & other)
+    {
+        x += other.x;
+        y += other.y;
+        return *this;
+    }
+};
+
+struct Position : Point {
+    Direction direction;
+
+    void advance(int const amount) { Point::advance(amount, direction); }
+    void advance(int const amount, Direction const direction_) { Point::advance(amount, direction_); }
 };
 
 Direction rotate(Direction const initial_direction, int const amount, bool const clockwise)
@@ -190,5 +226,47 @@ std::string day_12_a(char const * input_file_path)
 //==============================================================================
 std::string day_12_b(char const * input_file_path)
 {
-    return "day_12_b not implemented";
+    auto const input{ read_file(input_file_path) };
+    auto const lines{ split(input) };
+
+    std::vector<Step> steps{};
+    steps.reserve(lines.size());
+
+    for (auto const & line : lines) {
+        steps.emplace_back(parse_step(line));
+    }
+
+    Point boat{ 0, 0 };
+    Point waypoint{ 10, -1 };
+
+    for (auto const & step : steps) {
+        switch (step.action) {
+        case Action::north:
+            waypoint.advance(step.amount, Direction::north);
+            break;
+        case Action::east:
+            waypoint.advance(step.amount, Direction::east);
+            break;
+        case Action::south:
+            waypoint.advance(step.amount, Direction::south);
+            break;
+        case Action::west:
+            waypoint.advance(step.amount, Direction::west);
+            break;
+        case Action::left:
+            waypoint.rotate_around_origin(step.amount, false);
+            break;
+        case Action::right:
+            waypoint.rotate_around_origin(step.amount, true);
+            break;
+        case Action::forward:
+            boat += waypoint * step.amount;
+            break;
+        default:
+            assert(false);
+        }
+    }
+
+    auto const manhattan_distance{ std::abs(boat.x) + std::abs(boat.y) };
+    return std::to_string(manhattan_distance);
 }
