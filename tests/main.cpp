@@ -179,13 +179,13 @@ TEST_CASE("day_13_a")
 
 TEST_CASE("day_13_b")
 {
-    REQUIRE(day_13_b(inputs::TEST_13_A_1) == "1068781");
     REQUIRE(day_13_b(inputs::TEST_13_B_1) == "3417");
     REQUIRE(day_13_b(inputs::TEST_13_B_2) == "754018");
     REQUIRE(day_13_b(inputs::TEST_13_B_3) == "779210");
+    REQUIRE(day_13_b(inputs::TEST_13_A_1) == "1068781");
     REQUIRE(day_13_b(inputs::TEST_13_B_4) == "1261476");
     REQUIRE(day_13_b(inputs::TEST_13_B_5) == "1202161486");
-    // REQUIRE(day_13_b(inputs::DAY_13) == "28591");
+    REQUIRE(day_13_b(inputs::DAY_13) == "471793476184394");
 }
 
 //==============================================================================
