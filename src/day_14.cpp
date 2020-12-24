@@ -6,7 +6,21 @@
 #include <resources.hpp>
 
 //==============================================================================
-using Memory = std::unordered_map<uint64_t, uint64_t>;
+class Memory : public std::unordered_map<uint64_t, uint64_t>
+{
+    using unordered_map::unordered_map;
+
+public:
+    uint64_t sum_values() const
+    {
+        auto const sum{ std::accumulate(
+            cbegin(),
+            cend(),
+            uint64_t{},
+            [](uint64_t const value, Memory::value_type const & p) { return value + p.second; }) };
+        return sum;
+    }
+};
 
 //==============================================================================
 struct Operation {
@@ -16,8 +30,41 @@ struct Operation {
 
 //==============================================================================
 struct Mask {
-    uint64_t force_zeros;
-    uint64_t force_ones;
+    [[maybe_unused]] static auto constexpr LENGTH = 36;
+    uint64_t zeros;
+    uint64_t ones;
+
+    uint64_t apply(uint64_t const & value) const
+    {
+        auto const zero_removed{ value & ~zeros };
+        auto const result{ zero_removed | ones };
+        return result;
+    }
+    template<typename Func>
+    void for_all_permutations(uint64_t const address, Func const & func) const
+    {
+        for_all_permutations_(func, ones | address, 0);
+    }
+
+private:
+    template<typename Func>
+    void for_all_permutations_(Func const & func, uint64_t const value, size_t const shift) const
+    {
+        if (shift == LENGTH) {
+            func(value);
+            return;
+        }
+
+        auto const mask{ uint64_t{ 1 } << shift };
+        if (mask & (ones | zeros)) {
+            // value is set : keep on going
+            for_all_permutations_(func, value, shift + 1);
+        } else {
+            // value is floating, branch
+            for_all_permutations_(func, value, shift + 1);
+            for_all_permutations_(func, value ^ mask, shift + 1);
+        }
+    }
 };
 
 //==============================================================================
@@ -29,22 +76,18 @@ struct Init_Section {
 //==============================================================================
 Mask parse_mask(std::string_view const & string)
 {
-    [[maybe_unused]] static auto constexpr MASK_LENGTH = 36;
-
-    assert(string.size() == MASK_LENGTH);
-    Mask result{ 0, std::numeric_limits<uint64_t>::max() };
+    assert(string.size() == Mask::LENGTH);
+    Mask result{ 0, 0 };
 
     for (auto it{ string.cbegin() }; it != string.cend(); ++it) {
-        result.force_ones <<= 1;
-        result.force_zeros <<= 1;
+        result.ones <<= 1;
+        result.zeros <<= 1;
         if (*it == '1') {
-            ++result.force_ones;
-            ++result.force_zeros;
-        } else if (*it == 'X') {
-            ++result.force_zeros;
-            ;
+            ++result.ones;
+        } else if (*it == '0') {
+            ++result.zeros;
         } else {
-            assert(*it == '0');
+            assert(*it == 'X');
         }
     }
 
@@ -78,6 +121,8 @@ std::vector<Init_Section> parse_init_sequence(std::string const & input)
     return result;
 }
 
+#include <iostream>
+
 //==============================================================================
 std::string day_14_a(char const * input_file_path)
 {
@@ -87,17 +132,12 @@ std::string day_14_a(char const * input_file_path)
     Memory memory{};
     for (auto const & section : init_sequence) {
         for (auto const & operation : section.operations) {
-            auto const forced_ones{ operation.value | section.mask.force_ones };
-            auto const forced_zeros{ forced_ones & section.mask.force_zeros };
-            memory[operation.address] = forced_zeros;
+            auto const masked_value{ section.mask.apply(operation.value) };
+            memory[operation.address] = masked_value;
         }
     }
 
-    auto const sum{ std::accumulate(
-        memory.cbegin(),
-        memory.cend(),
-        uint64_t{},
-        [](uint64_t const value, Memory::value_type const & p) { return value + p.second; }) };
+    auto const sum{ memory.sum_values() };
 
     return std::to_string(sum);
 }
@@ -105,5 +145,20 @@ std::string day_14_a(char const * input_file_path)
 //==============================================================================
 std::string day_14_b(char const * input_file_path)
 {
-    return std::to_string(0);
+    auto const input{ read_file(input_file_path) };
+    auto const init_sequence{ parse_init_sequence(input) };
+
+    Memory memory{};
+
+    for (auto const & section : init_sequence) {
+        for (auto const & operation : section.operations) {
+            section.mask.for_all_permutations(operation.address, [&memory, &operation](uint64_t const address) {
+                memory[address] = operation.value;
+            });
+        }
+    }
+
+    auto const sum{ memory.sum_values() };
+
+    return std::to_string(sum);
 }

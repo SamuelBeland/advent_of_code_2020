@@ -195,11 +195,11 @@ TEST_CASE("day_14_a")
     REQUIRE(day_14_a(inputs::DAY_14) == "8471403462063");
 }
 
-// TEST_CASE("day_14_b")
-//{
-//    REQUIRE(day_14_b(inputs::TEST_14_A_1) == "3417");
-//    REQUIRE(day_14_b(inputs::DAY_14) == "471793476184394");
-//}
+TEST_CASE("day_14_b")
+{
+    REQUIRE(day_14_b(inputs::TEST_14_B_1) == "208");
+    REQUIRE(day_14_b(inputs::DAY_14) == "2667858637669");
+}
 
 //==============================================================================
 #ifdef NDEBUG
