@@ -1,4 +1,3 @@
-#include <limits>
 #include <numeric>
 #include <unordered_map>
 
@@ -17,7 +16,7 @@ public:
             cbegin(),
             cend(),
             uint64_t{},
-            [](uint64_t const value, Memory::value_type const & p) { return value + p.second; }) };
+            [](uint64_t const value, value_type const & node) { return value + node.second; }) };
         return sum;
     }
 };
@@ -34,35 +33,56 @@ struct Mask {
     uint64_t zeros;
     uint64_t ones;
 
-    uint64_t apply(uint64_t const & value) const
+    //==============================================================================
+    uint64_t apply_part_a(uint64_t const & value) const { return (value | ones) & ~zeros; }
+    //==============================================================================
+    uint64_t apply_part_b(uint64_t const & value) const { return (value & zeros) | ones; }
+    //==============================================================================
+    void register_floating_permutations(std::vector<uint64_t> & out) const
     {
-        auto const zero_removed{ value & ~zeros };
-        auto const result{ zero_removed | ones };
-        return result;
+        out.clear();
+        register_floating_permutations_(out, 0, 0);
     }
-    template<typename Func>
-    void for_all_permutations(uint64_t const address, Func const & func) const
+    //==============================================================================
+    static Mask from_string(std::string_view const & string)
     {
-        for_all_permutations_(func, ones | address, 0);
+        assert(string.size() == Mask::LENGTH);
+        Mask result{ 0, 0 };
+
+        for (auto it{ string.cbegin() }; it != string.cend(); ++it) {
+            result.ones <<= 1;
+            result.zeros <<= 1;
+            if (*it == '1') {
+                ++result.ones;
+            } else if (*it == '0') {
+                ++result.zeros;
+            } else {
+                assert(*it == 'X');
+            }
+        }
+
+        return result;
     }
 
 private:
-    template<typename Func>
-    void for_all_permutations_(Func const & func, uint64_t const value, size_t const shift) const
+    //==============================================================================
+    void register_floating_permutations_(std::vector<uint64_t> & permutations,
+                                         uint64_t const value,
+                                         size_t const shift) const
     {
         if (shift == LENGTH) {
-            func(value);
+            permutations.push_back(value);
             return;
         }
 
         auto const mask{ uint64_t{ 1 } << shift };
         if (mask & (ones | zeros)) {
             // value is set : keep on going
-            for_all_permutations_(func, value, shift + 1);
+            register_floating_permutations_(permutations, value, shift + 1);
         } else {
             // value is floating, branch
-            for_all_permutations_(func, value, shift + 1);
-            for_all_permutations_(func, value ^ mask, shift + 1);
+            register_floating_permutations_(permutations, value, shift + 1);
+            register_floating_permutations_(permutations, value ^ mask, shift + 1);
         }
     }
 };
@@ -72,27 +92,6 @@ struct Init_Section {
     Mask mask;
     std::vector<Operation> operations;
 };
-
-//==============================================================================
-Mask parse_mask(std::string_view const & string)
-{
-    assert(string.size() == Mask::LENGTH);
-    Mask result{ 0, 0 };
-
-    for (auto it{ string.cbegin() }; it != string.cend(); ++it) {
-        result.ones <<= 1;
-        result.zeros <<= 1;
-        if (*it == '1') {
-            ++result.ones;
-        } else if (*it == '0') {
-            ++result.zeros;
-        } else {
-            assert(*it == 'X');
-        }
-    }
-
-    return result;
-}
 
 //==============================================================================
 std::vector<Init_Section> parse_init_sequence(std::string const & input)
@@ -106,7 +105,7 @@ std::vector<Init_Section> parse_init_sequence(std::string const & input)
             std::string_view mask;
             scan(line, "mask = {}", mask);
             Init_Section new_init_section;
-            new_init_section.mask = parse_mask(mask);
+            new_init_section.mask = Mask::from_string(mask);
             result.push_back(new_init_section);
         } else {
             // first word is "mem" : memory assignation line
@@ -121,8 +120,6 @@ std::vector<Init_Section> parse_init_sequence(std::string const & input)
     return result;
 }
 
-#include <iostream>
-
 //==============================================================================
 std::string day_14_a(char const * input_file_path)
 {
@@ -132,7 +129,7 @@ std::string day_14_a(char const * input_file_path)
     Memory memory{};
     for (auto const & section : init_sequence) {
         for (auto const & operation : section.operations) {
-            auto const masked_value{ section.mask.apply(operation.value) };
+            auto const masked_value{ section.mask.apply_part_a(operation.value) };
             memory[operation.address] = masked_value;
         }
     }
@@ -149,12 +146,16 @@ std::string day_14_b(char const * input_file_path)
     auto const init_sequence{ parse_init_sequence(input) };
 
     Memory memory{};
+    std::vector<uint64_t> permutations;
 
     for (auto const & section : init_sequence) {
+        section.mask.register_floating_permutations(permutations);
         for (auto const & operation : section.operations) {
-            section.mask.for_all_permutations(operation.address, [&memory, &operation](uint64_t const address) {
-                memory[address] = operation.value;
-            });
+            auto const masked_address{ section.mask.apply_part_b(operation.address) };
+            for (auto const & permutation : permutations) {
+                auto const real_address{ masked_address | permutation };
+                memory[real_address] = operation.value;
+            }
         }
     }
 
