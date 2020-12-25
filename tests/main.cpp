@@ -205,6 +205,12 @@ TEST_CASE("day_14_b")
 TEST_CASE("day_15_a")
 {
     REQUIRE(day_15_a(inputs::TEST_15_A_1) == "436");
+    REQUIRE(day_15_a(inputs::TEST_15_A_2) == "1");
+    REQUIRE(day_15_a(inputs::TEST_15_A_3) == "10");
+    REQUIRE(day_15_a(inputs::TEST_15_A_4) == "27");
+    REQUIRE(day_15_a(inputs::TEST_15_A_5) == "78");
+    REQUIRE(day_15_a(inputs::TEST_15_A_6) == "438");
+    REQUIRE(day_15_a(inputs::TEST_15_A_7) == "1836");
     // REQUIRE(day_15_a(inputs::DAY_15) == "8471403462063");
 }
 
