@@ -82,7 +82,7 @@ Entry parse_entry(std::string_view const & line)
 }
 
 //==============================================================================
-bool is_valid_day_2_a_entry(Entry const & entry)
+bool is_valid_part_a_entry(Entry const & entry)
 {
     auto const count{ std::count(entry.password.begin(), entry.password.end(), entry.password_policy.character) };
     auto const & min{ entry.password_policy.param_1 };
@@ -92,7 +92,7 @@ bool is_valid_day_2_a_entry(Entry const & entry)
 }
 
 //==============================================================================
-bool is_valid_day_2_b_entry(Entry const & entry)
+bool is_valid_part_b_entry(Entry const & entry)
 {
     auto const & character{ entry.password_policy.character };
     auto const & index_1{ entry.password_policy.param_1 };
@@ -106,28 +106,26 @@ bool is_valid_day_2_b_entry(Entry const & entry)
 }
 
 //==============================================================================
-std::string day_2_a(char const * input_file_path)
+std::string day_2(char const * input_file_path, bool (*predicate)(Entry const &))
 {
     auto const input{ read_file(input_file_path) };
     auto const lines{ split(input) };
 
     std::vector<Entry> entries{ lines.size() };
-    std::transform(lines.begin(), lines.end(), entries.begin(), parse_entry);
-    auto const count{ std::count_if(entries.begin(), entries.end(), is_valid_day_2_a_entry) };
+    std::transform(lines.cbegin(), lines.cend(), entries.begin(), parse_entry);
+    auto const count{ std::count_if(entries.cbegin(), entries.cend(), predicate) };
 
     return std::to_string(count);
 }
 
 //==============================================================================
+std::string day_2_a(char const * input_file_path)
+{
+    return day_2(input_file_path, is_valid_part_a_entry);
+}
+
+//==============================================================================
 std::string day_2_b(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
-    auto const lines{ split(input) };
-
-    std::vector<Entry> entries{ lines.size() };
-    std::transform(lines.begin(), lines.end(), entries.begin(), parse_entry);
-
-    auto const count{ std::count_if(entries.begin(), entries.end(), is_valid_day_2_b_entry) };
-
-    return std::to_string(count);
+    return day_2(input_file_path, is_valid_part_b_entry);
 }

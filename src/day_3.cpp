@@ -167,8 +167,8 @@ std::string day_3_a(char const * input_file_path)
 
     Forest const forest{ input_file_path };
 
-    auto const result{ forest.count_trees_in_slope(SLOPE) };
-    return std::to_string(result);
+    auto const tree_count{ forest.count_trees_in_slope(SLOPE) };
+    return std::to_string(tree_count);
 }
 
 //==============================================================================
@@ -182,13 +182,14 @@ std::string day_3_b(char const * input_file_path)
 
     Forest const forest{ input_file_path };
 
-    auto const transform_function = [&forest](Slope const & slope) { return forest.count_trees_in_slope(slope); };
+    auto const multiply_tree_counts = [&forest](size_t const current_total, Slope const & slope) {
+        auto const new_total{ current_total * forest.count_trees_in_slope(slope) };
+        return new_total;
+    };
 
-    auto const result{ std::transform_reduce(SLOPES.cbegin(),
-                                             SLOPES.cend(),
-                                             static_cast<size_t>(1),
-                                             std::multiplies(),
-                                             transform_function) };
+    auto const product_of_tree_counts{
+        std::accumulate(SLOPES.cbegin(), SLOPES.cend(), size_t{ 1 }, multiply_tree_counts)
+    };
 
-    return std::to_string(result);
+    return std::to_string(product_of_tree_counts);
 }

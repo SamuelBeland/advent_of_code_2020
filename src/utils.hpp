@@ -159,3 +159,40 @@ void scan_list(std::string_view const & string, T & collection, std::string_view
         collection.push_back(item);
     }
 }
+
+template<typename T>
+void scan_list(std::string_view const & string, T & collection, char const separator)
+{
+    size_t begin{};
+    auto end{ string.find(separator) };
+    while (end != std::string_view::npos) {
+        typename T::value_type item;
+        auto const value_string{ string.substr(begin, end - begin) };
+        copy_or_parse(value_string, item);
+        collection.push_back(item);
+        begin = end + 1;
+        end = string.find(separator, begin);
+    }
+    if (begin < string.size()) {
+        typename T::value_type item;
+        auto const value_string{ string.substr(begin) };
+        copy_or_parse(value_string, item);
+        collection.push_back(item);
+    }
+}
+
+template<typename T>
+std::vector<T> scan_list(std::string_view const & string, std::string_view const & separator)
+{
+    std::vector<T> result{};
+    scan_list(string, result, separator);
+    return result;
+}
+
+template<typename T>
+std::vector<T> scan_list(std::string_view const & string, char const separator)
+{
+    std::vector<T> result{};
+    scan_list(string, result, separator);
+    return result;
+}

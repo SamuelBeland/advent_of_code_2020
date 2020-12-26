@@ -206,6 +206,7 @@ Position & apply_step(Position & position, Step const & step)
         position.direction = rotate(position.direction, step.amount, false);
         return position;
     }
+    assert(false);
 }
 
 //==============================================================================
