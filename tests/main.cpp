@@ -214,11 +214,19 @@ TEST_CASE("day_15_a")
     REQUIRE(day_15_a(inputs::DAY_15) == "536");
 }
 
-// TEST_CASE("day_15_b")
-//{
-//    REQUIRE(day_15_b(inputs::TEST_15_A_1) == "208");
-//    REQUIRE(day_15_b(inputs::DAY_15) == "2667858637669");
-//}
+TEST_CASE("day_15_b")
+{
+    // NOTE : these tests are way too expensive to run.
+
+    // REQUIRE(day_15_b(inputs::TEST_15_A_1) == "175594");
+    // REQUIRE(day_15_b(inputs::TEST_15_A_2) == "2578");
+    // REQUIRE(day_15_b(inputs::TEST_15_A_3) == "3544142");
+    // REQUIRE(day_15_b(inputs::TEST_15_A_4) == "261214");
+    // REQUIRE(day_15_b(inputs::TEST_15_A_5) == "6895259");
+    // REQUIRE(day_15_b(inputs::TEST_15_A_6) == "18");
+    // REQUIRE(day_15_b(inputs::TEST_15_A_7) == "362");
+    REQUIRE(day_15_b(inputs::DAY_15) == "24065124");
+}
 
 //==============================================================================
 #ifdef NDEBUG
