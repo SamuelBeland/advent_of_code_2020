@@ -100,6 +100,13 @@ struct Slope {
 };
 
 //==============================================================================
+Position parse_position(char const character)
+{
+    assert(character == '.' || character == '#');
+    return character == '.' ? Position::free : Position::tree;
+}
+
+//==============================================================================
 class Forest
 {
     size_t m_width;
@@ -123,8 +130,7 @@ public:
 
         for (auto const & line : lines) {
             for (auto const & character : line) {
-                assert(character == '.' || character == '#');
-                m_data.push_back(character == '.' ? Position::free : Position::tree);
+                m_data.emplace_back(parse_position(character));
             }
         }
     }

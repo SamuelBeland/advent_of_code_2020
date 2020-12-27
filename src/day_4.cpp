@@ -240,12 +240,9 @@ static constexpr std::array<Constraint, 7> CONSTRAINTS{
 //==============================================================================
 bool has_all_mandatory_fields(std::string_view const & entry)
 {
-    for (auto const & field : CONSTRAINTS) {
-        if (entry.find(field.id) == std::string::npos) {
-            return false;
-        }
-    }
-    return true;
+    return std::all_of(CONSTRAINTS.cbegin(), CONSTRAINTS.cend(), [&entry](Constraint const & constraint) -> bool {
+        return entry.find(constraint.id) != std::string::npos;
+    });
 }
 
 //==============================================================================
@@ -267,21 +264,17 @@ bool satisfies_constraint(std::string_view const & entry, Constraint const & con
 }
 
 //==============================================================================
-bool satisfies_all_constraints(std::string_view const & entry)
-{
-    auto const test_constraint
-        = [&entry](Constraint const & constraint) -> bool { return satisfies_constraint(entry, constraint); };
-
-    return std::all_of(CONSTRAINTS.cbegin(), CONSTRAINTS.cend(), test_constraint);
-}
-
-//==============================================================================
 std::string day_4_a(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
     auto const entries{ split(input, "\n\n") };
-    auto const count{ std::count_if(entries.cbegin(), entries.cend(), has_all_mandatory_fields) };
-    return std::to_string(count);
+
+    auto const valid_count{ std::count_if(entries.cbegin(), entries.cend(), [](std::string_view const & entry) -> bool {
+        return std::all_of(CONSTRAINTS.cbegin(), CONSTRAINTS.cend(), [&entry](Constraint const & constraint) -> bool {
+            return entry.find(constraint.id) != std::string::npos;
+        });
+    }) };
+    return std::to_string(valid_count);
 }
 
 //==============================================================================
@@ -289,6 +282,10 @@ std::string day_4_b(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
     auto const entries{ split(input, "\n\n") };
-    auto const valid_count{ std::count_if(entries.cbegin(), entries.cend(), satisfies_all_constraints) };
+    auto const valid_count{ std::count_if(entries.cbegin(), entries.cend(), [](std::string_view const & entry) -> bool {
+        return std::all_of(CONSTRAINTS.cbegin(), CONSTRAINTS.cend(), [&entry](Constraint const & constraint) -> bool {
+            return satisfies_constraint(entry, constraint);
+        });
+    }) };
     return std::to_string(valid_count);
 }

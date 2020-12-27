@@ -8,6 +8,7 @@
 using number_t = int;
 using Numbers_And_Last_Sightings = std::unordered_map<number_t, number_t>;
 
+//==============================================================================
 auto parse_starting_numbers(std::string_view const & string)
 {
     std::vector<number_t> starting_numbers{};
@@ -15,6 +16,7 @@ auto parse_starting_numbers(std::string_view const & string)
     return starting_numbers;
 }
 
+//==============================================================================
 auto play_game(std::vector<number_t> const & starting_numbers)
 {
     static constexpr int TARGET_TURN = 2020;
@@ -49,7 +51,6 @@ std::string day_15_a(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
     auto const starting_numbers{ parse_starting_numbers(input) };
-
     auto const result{ play_game(starting_numbers) };
 
     return std::to_string(result);
@@ -58,5 +59,5 @@ std::string day_15_a(char const * input_file_path)
 //==============================================================================
 std::string day_15_b(char const * input_file_path)
 {
-    return std::to_string(666);
+    return "not implemented";
 }
