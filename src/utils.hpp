@@ -76,6 +76,7 @@ public:
     size_t size() const { return m_size; }
 };
 
+//==============================================================================
 template<typename T>
 void copy_or_parse(std::string_view const & string, T & out_param)
 {
@@ -83,12 +84,14 @@ void copy_or_parse(std::string_view const & string, T & out_param)
     assert(error.ec == std::errc());
 }
 
+//==============================================================================
 template<>
 inline void copy_or_parse(std::string_view const & string, std::string_view & out_param)
 {
     out_param = string;
 }
 
+//==============================================================================
 template<>
 inline void copy_or_parse(std::string_view const & string, char & out_param)
 {
@@ -96,11 +99,13 @@ inline void copy_or_parse(std::string_view const & string, char & out_param)
     out_param = string.front();
 }
 
+//==============================================================================
 template<typename... Ts>
 void scan(std::string_view const & string, std::string_view const & format)
 {
 }
 
+//==============================================================================
 // TODO : This is a pretty useful function. Optimize the hell out of it!
 template<typename T, typename... Ts>
 void scan(std::string_view const & string, std::string_view const & format, T & out_param, Ts &... Args)
@@ -139,6 +144,7 @@ void scan(std::string_view const & string, std::string_view const & format, T & 
     scan(new_string, new_format, Args...);
 }
 
+//==============================================================================
 template<typename T>
 void scan_list(std::string_view const & string, T & collection, std::string_view const & separator)
 {
@@ -160,6 +166,7 @@ void scan_list(std::string_view const & string, T & collection, std::string_view
     }
 }
 
+//==============================================================================
 template<typename T>
 void scan_list(std::string_view const & string, T & collection, char const separator)
 {
@@ -181,6 +188,7 @@ void scan_list(std::string_view const & string, T & collection, char const separ
     }
 }
 
+//==============================================================================
 template<typename T>
 std::vector<T> scan_list(std::string_view const & string, std::string_view const & separator)
 {
@@ -189,6 +197,7 @@ std::vector<T> scan_list(std::string_view const & string, std::string_view const
     return result;
 }
 
+//==============================================================================
 template<typename T>
 std::vector<T> scan_list(std::string_view const & string, char const separator)
 {

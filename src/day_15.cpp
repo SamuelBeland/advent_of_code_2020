@@ -19,10 +19,11 @@
 // Turn 2 : The 2nd number spoken is a starting number, 3.
 // Turn 3 : The 3rd number spoken is a starting number, 6.
 // Turn 4 : Now, consider the last number spoken, 6. Since that was the first time the number had been spoken, the 4th
-// number spoken is 0. Turn 5 : Next, again consider the last number spoken, 0. Since it had been spoken before, the next
-// number to speak is the difference between the turn number when it was last spoken(the previous turn, 4) and the turn
-// number of the time it was most recently spoken before then(turn 1).Thus, the 5th number spoken is 4 - 1, 3. Turn 6 :
-// The last number spoken, 3 had also been spoken before, most recently on turns 5 and 2. So, the 6th number spoken is 5
+// number spoken is 0. Turn 5 : Next, again consider the last number spoken, 0. Since it had been spoken before, the
+// next number to speak is the difference between the turn number when it was last spoken(the previous turn, 4) and the
+// turn number of the time it was most recently spoken before then(turn 1).Thus, the 5th number spoken is 4 - 1, 3. Turn
+// 6 : The last number spoken, 3 had also been spoken before, most recently on turns 5 and 2. So, the 6th number spoken
+// is 5
 // - 2, 3. Turn 7 : Since 3 was just spoken twice in a row, and the last two turns are 1 turn apart, the 7th number
 // spoken is 1. Turn 8 : Since 1 is new, the 8th number spoken is 0. Turn 9 : 0 was last spoken on turns 8 and 4, so the
 // 9th number spoken is the difference between them, 4. Turn 10 : 4 is new, so the 10th number spoken is 0.
@@ -63,20 +64,16 @@
 #include <resources.hpp>
 
 using number_t = int;
-using Numbers_And_Last_Sightings = std::unordered_map<number_t, number_t>;
 
 //==============================================================================
-auto parse_starting_numbers(std::string_view const & string)
+std::string day_15(char const * input_file_path, number_t const last_turn)
 {
-    std::vector<number_t> starting_numbers{};
-    scan_list(string, starting_numbers, ",");
-    return starting_numbers;
-}
+    auto const input{ read_file(input_file_path) };
+    auto const starting_numbers{ scan_list<number_t>(input, ',') };
 
-//==============================================================================
-auto play_game(std::vector<number_t> const & starting_numbers, number_t const last_turn)
-{
-    Numbers_And_Last_Sightings numbers{};
+    std::unordered_map<number_t, number_t> numbers{};
+    numbers.reserve(last_turn);
+    numbers.rehash(last_turn);
     int current_turn{ 1 };
     auto last_number{ starting_numbers.front() };
     for (auto it{ starting_numbers.cbegin() + 1 }; it != starting_numbers.cend(); ++it) {
@@ -88,27 +85,16 @@ auto play_game(std::vector<number_t> const & starting_numbers, number_t const la
         auto const find_result{ numbers.find(last_number) };
         if (find_result != numbers.cend()) {
             // number was found
-            auto const turn_difference{ current_turn - find_result->second };
-            last_number = turn_difference;
+            last_number = current_turn - find_result->second;
             find_result->second = current_turn;
         } else {
-            // starting number
-            numbers.emplace(std::make_pair(last_number, current_turn));
+            // number was not found
+            numbers.emplace(last_number, current_turn);
             last_number = 0;
         }
     }
 
-    return last_number;
-}
-
-//==============================================================================
-std::string day_15(char const * input_file_path, number_t const last_turn)
-{
-    auto const input{ read_file(input_file_path) };
-    auto const starting_numbers{ parse_starting_numbers(input) };
-    auto const result{ play_game(starting_numbers, last_turn) };
-
-    return std::to_string(result);
+    return std::to_string(last_number);
 }
 
 //==============================================================================
