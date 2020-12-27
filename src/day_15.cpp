@@ -63,7 +63,7 @@
 #include "utils.hpp"
 #include <resources.hpp>
 
-using number_t = int;
+using number_t = unsigned;
 
 //==============================================================================
 std::string day_15(char const * input_file_path, number_t const last_turn)
@@ -72,8 +72,7 @@ std::string day_15(char const * input_file_path, number_t const last_turn)
     auto const starting_numbers{ scan_list<number_t>(input, ',') };
 
     std::unordered_map<number_t, number_t> numbers{};
-    numbers.reserve(last_turn);
-    numbers.rehash(last_turn);
+    numbers.reserve(last_turn / 2); // lets just reserve a metric ton of memory
     int current_turn{ 1 };
     auto last_number{ starting_numbers.front() };
     for (auto it{ starting_numbers.cbegin() + 1 }; it != starting_numbers.cend(); ++it) {

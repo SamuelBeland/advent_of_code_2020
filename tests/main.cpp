@@ -225,7 +225,20 @@ TEST_CASE("day_15_b")
     // REQUIRE(day_15_b(inputs::TEST_15_A_5) == "6895259");
     // REQUIRE(day_15_b(inputs::TEST_15_A_6) == "18");
     // REQUIRE(day_15_b(inputs::TEST_15_A_7) == "362");
-    REQUIRE(day_15_b(inputs::DAY_15) == "24065124");
+    // REQUIRE(day_15_b(inputs::DAY_15) == "24065124");
+}
+
+//==============================================================================
+TEST_CASE("day_16_a")
+{
+    REQUIRE(day_16_a(inputs::TEST_16_A_1) == "71");
+    // REQUIRE(day_16_a(inputs::DAY_16) == "536");
+}
+
+TEST_CASE("day_16_b")
+{
+    // REQUIRE(day_16_b(inputs::TEST_16_A_1) == "175594");
+    // REQUIRE(day_16_b(inputs::DAY_16) == "24065124");
 }
 
 //==============================================================================
