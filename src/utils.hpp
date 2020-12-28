@@ -93,6 +93,13 @@ inline void copy_or_parse(std::string_view const & string, std::string_view & ou
 
 //==============================================================================
 template<>
+inline void copy_or_parse(std::string_view const & string, std::string & out_param)
+{
+    out_param = string;
+}
+
+//==============================================================================
+template<>
 inline void copy_or_parse(std::string_view const & string, char & out_param)
 {
     assert(string.size() == 1);
