@@ -82,6 +82,11 @@ struct Ticket_Values {
     }
 };
 
+struct Prospect
+{
+    size_t 
+};
+
 //==============================================================================
 struct Info {
     std::vector<Ticket_Field> ticket_fields;
@@ -133,6 +138,8 @@ struct Info {
                 }
             }
         }
+
+        for (size_t field_index{}; field_index < )
 
         return 0;
     }
