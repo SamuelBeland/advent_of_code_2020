@@ -33,6 +33,7 @@ struct Ticket_Field {
     {
         return low_range.contains(point) || high_range.contains(point);
     }
+    [[nodiscard]] bool is_departure() const { return name.find("departure") == 0; }
     //==============================================================================
     static Ticket_Field from_string(std::string_view const & line)
     {
@@ -97,23 +98,43 @@ struct Info {
     }
     [[nodiscard]] number_t get_departure_product() const
     {
-        auto const valid_tickets{ get_valid_tickets() };
-        std::vector<size_t> ticket_fields_indexes{};
-        ticket_fields_indexes.reserve(ticket_fields.size());
-
-        std::vector<size_t> prospects{};
-        auto const remove_incompatible_prospects = [this, &prospects](number_t const number) {
-            auto const valid_prospects_end{ std::remove_if(
-                prospects.begin(),
-                prospects.end(),
-                [this, number](size_t const field_index) { return !ticket_fields[field_index].contains(number); }) };
-            prospects.erase(valid_prospects_end, prospects.end());
+        auto const rotate = [](std::vector<Ticket_Values> const & values_to_rotate) {
+            std::vector<std::vector<number_t>> data{};
+            auto const number_of_fields{ values_to_rotate.front().numbers.size() };
+            auto const number_of_tickets{ values_to_rotate.size() };
+            data.resize(number_of_fields);
+            for (size_t field_index{}; field_index < number_of_fields; ++field_index) {
+                data[field_index].resize(number_of_tickets);
+                std::transform(
+                    values_to_rotate.cbegin(),
+                    values_to_rotate.cend(),
+                    data[field_index].begin(),
+                    [field_index](Ticket_Values const & ticket_values) { return ticket_values.numbers[field_index]; });
+            }
+            return data;
         };
 
-        for (size_t current_field_index{}; current_field_index < ticket_fields.size(); ++current_field_index) {
-            prospects.resize(ticket_fields.size());
-            std::iota(prospects.begin(), prospects.end(), size_t{});
+        auto const rotated_ticket_data{ rotate(get_valid_tickets()) };
+        std::vector<std::vector<size_t>> ticket_fields_indexes{};
+        ticket_fields_indexes.reserve(ticket_fields.size());
+
+        std::vector<std::vector<size_t>> incompatible_field_indexes{ rotated_ticket_data.size() };
+
+        for (size_t ticket_data_index{}; ticket_data_index < rotated_ticket_data.size(); ++ticket_data_index) {
+            auto const & ticket_data{ rotated_ticket_data[ticket_data_index] };
+            for (size_t field_index{}; field_index < ticket_fields.size(); ++field_index) {
+                auto const & field{ ticket_fields[field_index] };
+                auto const is_invalid{ std::any_of(
+                    ticket_data.cbegin(),
+                    ticket_data.cend(),
+                    [&field](number_t const number) { return !field.contains(number); }) };
+                if (is_invalid) {
+                    incompatible_field_indexes[ticket_data_index].push_back(field_index);
+                }
+            }
         }
+
+        return 0;
     }
     //==============================================================================
     static Info from_string(std::string_view const & string)
@@ -159,22 +180,22 @@ private:
     [[nodiscard]] std::vector<Ticket_Values> get_valid_tickets() const
     {
         auto const valid_ranges{ get_valid_ranges() };
-        auto result{ nearby_tickets_values };
-        auto const valid_end{ std::remove_if(
-            result.begin(),
-            result.end(),
+        auto candidate_tickets{ nearby_tickets_values };
+        auto const candidate_tickets_valid_end{ std::remove_if(
+            candidate_tickets.begin(),
+            candidate_tickets.end(),
             [&valid_ranges](Ticket_Values const & values) {
-                return std::all_of(
+                return std::any_of(
                     values.numbers.cbegin(),
                     values.numbers.cend(),
                     [&valid_ranges](number_t const number) {
-                        return std::any_of(valid_ranges.cbegin(), valid_ranges.cend(), [number](Range const & range) {
-                            return range.contains(number);
+                        return std::all_of(valid_ranges.cbegin(), valid_ranges.cend(), [number](Range const & range) {
+                            return !range.contains(number);
                         });
                     });
             }) };
-        result.erase(valid_end, nearby_tickets_values.end());
-        return result;
+        candidate_tickets.erase(candidate_tickets_valid_end, candidate_tickets.end());
+        return candidate_tickets;
     }
     //==============================================================================
     [[nodiscard]] std::vector<Range> get_valid_ranges() const

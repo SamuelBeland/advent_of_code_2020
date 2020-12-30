@@ -57,15 +57,18 @@ class Static_Vector
     std::array<T, MAX_SIZE> m_data;
     size_t m_size{};
 
+    static_assert(std::is_trivially_destructible<T>::value, "Static_Vector value type must be trivially destructible.");
+
 public:
+    //==============================================================================
     using value_type = T;
 
-    T * begin() { return m_data.data(); }
-    T * end() { return m_data.data() + m_size; }
-    T const * begin() const { return m_data.data(); }
-    T const * end() const { return m_data.data() + m_size; }
-    T const * cbegin() const { return m_data.data(); }
-    T const * cend() const { return m_data.data() + m_size; }
+    [[nodiscard]] auto begin() { return m_data.begin(); }
+    [[nodiscard]] auto end() { return m_data.begin() + m_size; }
+    [[nodiscard]] auto begin() const { return m_data.begin(); }
+    [[nodiscard]] auto end() const { return m_data.begin() + m_size; }
+    [[nodiscard]] auto cbegin() const { return m_data.cbegin(); }
+    [[nodiscard]] auto cend() const { return m_data.cbegin() + m_size; }
 
     T & push_back(T const & new_element)
     {
@@ -73,7 +76,7 @@ public:
         return m_data[m_size++] = new_element;
     }
 
-    size_t size() const { return m_size; }
+    [[nodiscard]] size_t size() const { return m_size; }
 };
 
 //==============================================================================

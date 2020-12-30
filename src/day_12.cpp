@@ -207,6 +207,7 @@ Position & apply_step(Position & position, Step const & step)
         return position;
     }
     assert(false);
+    return position;
 }
 
 //==============================================================================

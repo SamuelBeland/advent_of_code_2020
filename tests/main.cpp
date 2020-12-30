@@ -237,7 +237,7 @@ TEST_CASE("day_16_a")
 
 TEST_CASE("day_16_b")
 {
-    REQUIRE(day_16_b(inputs::TEST_16_A_1) == "132");
+    REQUIRE(day_16_b(inputs::TEST_16_B_1) == "132");
     // REQUIRE(day_16_b(inputs::DAY_16) == "24065124");
 }
 
