@@ -12,32 +12,32 @@ struct Range {
     number_t max;
 
     //==============================================================================
-    bool contains(number_t const point) const { return point >= min && point <= max; }
+    [[nodiscard]] bool contains(number_t const value) const { return value >= min && value <= max; }
     //==============================================================================
-    bool contains(Range const & other) const { return contains(other.min) || contains(other.max); }
+    [[nodiscard]] bool contains(Range const & other) const { return contains(other.min) || contains(other.max); }
     //==============================================================================
-    Range merge(Range const & other) const
+    [[nodiscard]] Range merge(Range const & other) const
     {
         return Range{ min < other.min ? min : other.min, max > other.max ? max : other.max };
     }
 };
 
 //==============================================================================
-struct Ticket_Field {
+struct Field_Rule {
     std::string name;
     Range low_range;
     Range high_range;
 
     //==============================================================================
-    [[nodiscard]] bool contains(number_t const point) const
+    [[nodiscard]] bool contains(number_t const value) const
     {
-        return low_range.contains(point) || high_range.contains(point);
+        return low_range.contains(value) || high_range.contains(value);
     }
     [[nodiscard]] bool is_departure() const { return name.find("departure") == 0; }
     //==============================================================================
-    static Ticket_Field from_string(std::string_view const & line)
+    [[nodiscard]] static Field_Rule from_string(std::string_view const & line)
     {
-        Ticket_Field result{};
+        Field_Rule result{};
         scan(line,
              "{}: {}-{} or {}-{}",
              result.name,
@@ -48,10 +48,10 @@ struct Ticket_Field {
         return result;
     }
     //==============================================================================
-    static std::vector<Ticket_Field> from_list_string(std::string_view const & string)
+    [[nodiscard]] static std::vector<Field_Rule> from_list_string(std::string_view const & string)
     {
         auto const lines{ split(string) };
-        std::vector<Ticket_Field> result{};
+        std::vector<Field_Rule> result{};
         result.reserve(lines.size());
         for (auto const & line : lines) {
             result.emplace_back(from_string(line));
@@ -61,90 +61,206 @@ struct Ticket_Field {
 };
 
 //==============================================================================
-struct Ticket_Values {
-    std::vector<number_t> numbers;
+using Ticket = std::vector<number_t>;
 
-    //==============================================================================
-    static Ticket_Values from_string(std::string_view const & line)
-    {
-        return Ticket_Values{ scan_list<number_t>(line, ',') };
-    }
-    //==============================================================================
-    static std::vector<Ticket_Values> from_list_string(std::string_view const & string)
-    {
-        auto const lines{ split(string) };
-        std::vector<Ticket_Values> result{};
-        result.reserve(lines.size());
-        for (auto const & line : lines) {
-            result.emplace_back(from_string(line));
-        }
-        return result;
-    }
-};
-
-struct Prospect
+//==============================================================================
+std::vector<Ticket> parse_ticket_values(std::string_view const string)
 {
-    size_t 
-};
+    auto const lines{ split(string) };
+    std::vector<Ticket> result{ lines.size() };
+    std::transform(lines.cbegin(), lines.cend(), result.begin(), [](std::string_view const & line) {
+        return scan_list<number_t>(line, ',');
+    });
+    return result;
+}
 
 //==============================================================================
-struct Info {
-    std::vector<Ticket_Field> ticket_fields;
-    Ticket_Values my_ticket_values;
-    std::vector<Ticket_Values> nearby_tickets_values;
+void flatten_range(std::vector<Range> & non_overlapping_ranges, Range const & new_range)
+{
+    auto const colliding_range{ std::find_if(non_overlapping_ranges.begin(),
+                                             non_overlapping_ranges.end(),
+                                             [new_range](Range const & range) { return range.contains(new_range); }) };
 
-    //==============================================================================
-    [[nodiscard]] number_t get_ticket_scanning_error_rate() const
-    {
-        auto const invalid_numbers{ get_invalid_numbers() };
-
-        auto const result{ std::accumulate(invalid_numbers.cbegin(), invalid_numbers.cend(), number_t{}) };
-        return result;
+    if (colliding_range != non_overlapping_ranges.end()) {
+        auto const merged_new_range{ colliding_range->merge(new_range) };
+        non_overlapping_ranges.erase(colliding_range);
+        flatten_range(non_overlapping_ranges, merged_new_range);
+    } else {
+        non_overlapping_ranges.push_back(new_range);
     }
-    [[nodiscard]] number_t get_departure_product() const
-    {
-        auto const rotate = [](std::vector<Ticket_Values> const & values_to_rotate) {
-            std::vector<std::vector<number_t>> data{};
-            auto const number_of_fields{ values_to_rotate.front().numbers.size() };
-            auto const number_of_tickets{ values_to_rotate.size() };
-            data.resize(number_of_fields);
-            for (size_t field_index{}; field_index < number_of_fields; ++field_index) {
-                data[field_index].resize(number_of_tickets);
-                std::transform(
-                    values_to_rotate.cbegin(),
-                    values_to_rotate.cend(),
-                    data[field_index].begin(),
-                    [field_index](Ticket_Values const & ticket_values) { return ticket_values.numbers[field_index]; });
-            }
-            return data;
-        };
+}
 
-        auto const rotated_ticket_data{ rotate(get_valid_tickets()) };
-        std::vector<std::vector<size_t>> ticket_fields_indexes{};
-        ticket_fields_indexes.reserve(ticket_fields.size());
+//==============================================================================
+std::vector<Range> get_valid_ranges(std::vector<Field_Rule> const & field_rules)
+{
+    return std::reduce(field_rules.cbegin(),
+                       field_rules.cend(),
+                       std::vector<Range>{},
+                       [](std::vector<Range> & valid_ranges, Field_Rule const & rule) -> std::vector<Range> & {
+                           flatten_range(valid_ranges, rule.low_range);
+                           flatten_range(valid_ranges, rule.high_range);
+                           return valid_ranges;
+                       });
+}
 
-        std::vector<std::vector<size_t>> incompatible_field_indexes{ rotated_ticket_data.size() };
+//==============================================================================
+[[nodiscard]] std::vector<Ticket> get_valid_tickets(std::vector<Ticket> const & tickets,
+                                                    std::vector<Field_Rule> const & field_rules)
+{
+    auto const valid_ranges{ get_valid_ranges(field_rules) };
+    auto candidates{ tickets };
+    auto const candidates_valid_end{ std::remove_if(
+        candidates.begin(),
+        candidates.end(),
+        [&valid_ranges](Ticket const & ticket) {
+            return std::any_of(ticket.cbegin(), ticket.cend(), [&valid_ranges](number_t const value) {
+                return std::all_of(valid_ranges.cbegin(), valid_ranges.cend(), [value](Range const & range) {
+                    return !range.contains(value);
+                });
+            });
+        }) };
+    candidates.erase(candidates_valid_end, candidates.end());
+    return candidates;
+}
 
-        for (size_t ticket_data_index{}; ticket_data_index < rotated_ticket_data.size(); ++ticket_data_index) {
-            auto const & ticket_data{ rotated_ticket_data[ticket_data_index] };
-            for (size_t field_index{}; field_index < ticket_fields.size(); ++field_index) {
-                auto const & field{ ticket_fields[field_index] };
-                auto const is_invalid{ std::any_of(
-                    ticket_data.cbegin(),
-                    ticket_data.cend(),
-                    [&field](number_t const number) { return !field.contains(number); }) };
-                if (is_invalid) {
-                    incompatible_field_indexes[ticket_data_index].push_back(field_index);
-                }
+//==============================================================================
+std::vector<number_t> get_invalid_numbers(std::vector<Ticket> const & tickets,
+                                          std::vector<Field_Rule> const & field_rules)
+{
+    auto const valid_ranges{ get_valid_ranges(field_rules) };
+    std::vector<number_t> invalid_numbers{};
+
+    // auto const test = std::reduce()
+
+    auto const add_invalid_numbers = [&invalid_numbers, &valid_ranges](std::vector<number_t> const & values) {
+        for (auto const number : values) {
+            if (std::all_of(valid_ranges.cbegin(), valid_ranges.cend(), [number](Range const & valid_range) {
+                    return !valid_range.contains(number);
+                })) {
+                invalid_numbers.emplace_back(number);
             }
         }
+    };
 
-        for (size_t field_index{}; field_index < )
+    std::for_each(tickets.cbegin(), tickets.cend(), add_invalid_numbers);
 
-        return 0;
+    return invalid_numbers;
+}
+
+//==============================================================================
+number_t get_ticket_scanning_error_rate(std::vector<Ticket> const & tickets,
+                                        std::vector<Field_Rule> const & field_rules)
+{
+    auto const invalid_numbers{ get_invalid_numbers(tickets, field_rules) };
+
+    auto const result{ std::accumulate(invalid_numbers.cbegin(), invalid_numbers.cend(), number_t{}) };
+    return result;
+}
+
+//==============================================================================
+using Prospects = std::vector<size_t>;
+using Field_Samples = std::vector<number_t>;
+
+//==============================================================================
+std::vector<Prospects> fill_prospect_list(size_t const number_of_fields)
+{
+    std::vector<Prospects> results{ number_of_fields };
+    results.front().resize(number_of_fields);
+    std::iota(results.front().begin(), results.front().end(), size_t{});
+    std::fill(results.begin() + 1, results.end(), results.front());
+    return results;
+}
+
+//==============================================================================
+void deduce(std::vector<Prospects>::const_iterator const to_remove_begin,
+            std::vector<Prospects>::const_iterator const to_remove_end,
+            std::vector<Prospects>::iterator const to_remove_from_begin,
+            std::vector<Prospects>::iterator const to_remove_from_end)
+{
+    std::for_each(to_remove_begin,
+                  to_remove_end,
+                  [&to_remove_from_begin, &to_remove_from_end](Prospects const & to_remove) {
+                      std::for_each(to_remove_from_begin,
+                                    to_remove_from_end,
+                                    [to_remove_index = to_remove.front()](Prospects & to_remove_from) {
+                                        auto const find_result{
+                                            std::find(to_remove_from.begin(), to_remove_from.end(), to_remove_index)
+                                        };
+                                        if (find_result != to_remove_from.end()) {
+                                            to_remove_from.erase(find_result);
+                                        }
+                                    });
+                  });
+
+    auto const new_to_remove_from_begin{ std::partition(
+        to_remove_from_begin,
+        to_remove_from_end,
+        [](Prospects const & prospects) { return prospects.size() == 1; }) };
+
+    if (new_to_remove_from_begin != to_remove_from_begin) {
+        deduce(to_remove_end, new_to_remove_from_begin, new_to_remove_from_begin, to_remove_from_end);
     }
+}
+
+//==============================================================================
+number_t get_departure_product(std::vector<Ticket> const & tickets,
+                               std::vector<Field_Rule> const & field_rules,
+                               std::vector<number_t> const & my_ticket)
+{
+    // get valid, rotated data
+    auto const organize_ticket_values_by_fields = [](std::vector<Ticket> const & tickets) {
+        std::vector<Field_Samples> result{};
+        auto const number_of_fields{ tickets.front().size() };
+        auto const number_of_tickets{ tickets.size() };
+        result.resize(number_of_fields);
+        for (size_t field_index{}; field_index < number_of_fields; ++field_index) {
+            result[field_index].resize(number_of_tickets);
+            std::transform(
+                tickets.cbegin(),
+                tickets.cend(),
+                result[field_index].begin(),
+                [field_index](std::vector<number_t> const & ticket_values) { return ticket_values[field_index]; });
+        }
+        return result;
+    };
+
+    auto const samples{ organize_ticket_values_by_fields(get_valid_tickets(tickets, field_rules)) };
+    auto prospect_list{ fill_prospect_list(field_rules.size()) };
+
+    // remove all prospects that do not match data
+    for (size_t ticket_data_index{}; ticket_data_index < samples.size(); ++ticket_data_index) {
+        auto const & ticket_data{ samples[ticket_data_index] };
+        for (size_t field_index{}; field_index < field_rules.size(); ++field_index) {
+            auto const & field{ field_rules[field_index] };
+            if (std::any_of(ticket_data.cbegin(), ticket_data.cend(), [&field](number_t const number) {
+                    return !field.contains(number);
+                })) {
+                auto & prospect{ prospect_list[ticket_data_index] };
+                auto const search_result{ std::lower_bound(prospect.begin(), prospect.end(), field_index) };
+                prospect.erase(search_result);
+            }
+        }
+    }
+
+    // use deduction to single-out pairs
+    auto const to_remove_from_begin{ std::partition(
+        prospect_list.begin(),
+        prospect_list.end(),
+        [](Prospects const & prospects) { return prospects.size() == 1; }) };
+    deduce(prospect_list.cbegin(), to_remove_from_begin, to_remove_from_begin + 1, prospect_list.end());
+
+    // filter departure fields
+
+    return 0;
+}
+
+//==============================================================================
+struct Day_15_Data {
+    std::vector<Field_Rule> field_rules;
+    std::vector<number_t> my_ticket_values;
+    std::vector<std::vector<number_t>> nearby_tickets_values;
     //==============================================================================
-    static Info from_string(std::string_view const & string)
+    static Day_15_Data from_string(std::string_view const & string)
     {
         std::string_view ticket_fields_string;
         std::string_view my_ticket_values_string;
@@ -155,80 +271,9 @@ struct Info {
              my_ticket_values_string,
              nearby_tickets_values_string);
 
-        return Info{ Ticket_Field::from_list_string(ticket_fields_string),
-                     Ticket_Values::from_string(my_ticket_values_string),
-                     Ticket_Values::from_list_string(nearby_tickets_values_string) };
-    }
-
-private:
-    //==============================================================================
-    [[nodiscard]] std::vector<number_t> get_invalid_numbers() const
-    {
-        auto const valid_ranges{ get_valid_ranges() };
-        std::vector<number_t> invalid_numbers{};
-
-        auto const add_invalid_numbers = [&invalid_numbers, &valid_ranges](Ticket_Values const & values) {
-            for (auto const number : values.numbers) {
-                auto const is_valid{ std::any_of(
-                    valid_ranges.cbegin(),
-                    valid_ranges.cend(),
-                    [number](Range const & valid_range) { return valid_range.contains(number); }) };
-                if (!is_valid) {
-                    invalid_numbers.emplace_back(number);
-                }
-            }
-        };
-
-        std::for_each(nearby_tickets_values.cbegin(), nearby_tickets_values.cend(), add_invalid_numbers);
-
-        return invalid_numbers;
-    }
-    //==============================================================================
-    [[nodiscard]] std::vector<Ticket_Values> get_valid_tickets() const
-    {
-        auto const valid_ranges{ get_valid_ranges() };
-        auto candidate_tickets{ nearby_tickets_values };
-        auto const candidate_tickets_valid_end{ std::remove_if(
-            candidate_tickets.begin(),
-            candidate_tickets.end(),
-            [&valid_ranges](Ticket_Values const & values) {
-                return std::any_of(
-                    values.numbers.cbegin(),
-                    values.numbers.cend(),
-                    [&valid_ranges](number_t const number) {
-                        return std::all_of(valid_ranges.cbegin(), valid_ranges.cend(), [number](Range const & range) {
-                            return !range.contains(number);
-                        });
-                    });
-            }) };
-        candidate_tickets.erase(candidate_tickets_valid_end, candidate_tickets.end());
-        return candidate_tickets;
-    }
-    //==============================================================================
-    [[nodiscard]] std::vector<Range> get_valid_ranges() const
-    {
-        std::vector<Range> valid_ranges{};
-        std::function<void(Range const &)> const add_or_merge{ [&valid_ranges, &add_or_merge](Range const & new_range) {
-            auto const colliding_range{ std::find_if(
-                valid_ranges.begin(),
-                valid_ranges.end(),
-                [new_range](Range const & range) { return range.contains(new_range); }) };
-
-            if (colliding_range != valid_ranges.end()) {
-                auto const merged_new_range{ colliding_range->merge(new_range) };
-                valid_ranges.erase(colliding_range);
-                add_or_merge(merged_new_range);
-            } else {
-                valid_ranges.push_back(new_range);
-            }
-        } };
-
-        for (auto const & field : ticket_fields) {
-            add_or_merge(field.low_range);
-            add_or_merge(field.high_range);
-        }
-
-        return valid_ranges;
+        return Day_15_Data{ Field_Rule::from_list_string(ticket_fields_string),
+                            scan_list<number_t>(my_ticket_values_string, ','),
+                            parse_ticket_values(nearby_tickets_values_string) };
     }
 };
 
@@ -236,8 +281,8 @@ private:
 std::string day_16_a(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
-    auto const info{ Info::from_string(input) };
-    auto const error_rate{ info.get_ticket_scanning_error_rate() };
+    auto const info{ Day_15_Data::from_string(input) };
+    auto const error_rate{ get_ticket_scanning_error_rate(info.nearby_tickets_values, info.field_rules) };
 
     return std::to_string(error_rate);
 }
@@ -246,8 +291,10 @@ std::string day_16_a(char const * input_file_path)
 std::string day_16_b(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
-    auto info{ Info::from_string(input) };
-    auto const departure_product{ info.get_departure_product() };
+    auto info{ Day_15_Data::from_string(input) };
+    auto const departure_product{
+        get_departure_product(info.nearby_tickets_values, info.field_rules, info.my_ticket_values)
+    };
 
     return std::to_string(departure_product);
 }
