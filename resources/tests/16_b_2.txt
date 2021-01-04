@@ -1,0 +1,20 @@
+departure lol: 0-0 or 1-1
+seat: 0-1 or 2-2
+departure olo: 0-2 or 3-3
+departure lll: 0-4 or 5-5
+taes: 0-3 or 4-4
+
+your ticket:
+2,3,5,7,11
+
+nearby tickets:
+0,0,0,0,0
+90,0,0,0,0
+0,90,0,0,0
+0,0,0,90,0
+5,0,0,0,0
+0,4,0,0,0
+0,0,0,0,90
+0,0,0,2,0
+0,0,90,0,0
+0,0,3,0,0

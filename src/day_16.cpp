@@ -4,7 +4,7 @@
 #include "utils.hpp"
 #include <resources.hpp>
 
-using number_t = int;
+using number_t = uint64_t;
 
 //==============================================================================
 struct Range {
@@ -177,20 +177,31 @@ void deduce(std::vector<Prospects>::const_iterator const to_remove_begin,
             std::vector<Prospects>::iterator const to_remove_from_begin,
             std::vector<Prospects>::iterator const to_remove_from_end)
 {
-    std::for_each(to_remove_begin,
-                  to_remove_end,
-                  [&to_remove_from_begin, &to_remove_from_end](Prospects const & to_remove) {
-                      std::for_each(to_remove_from_begin,
-                                    to_remove_from_end,
-                                    [to_remove_index = to_remove.front()](Prospects & to_remove_from) {
-                                        auto const find_result{
-                                            std::find(to_remove_from.begin(), to_remove_from.end(), to_remove_index)
-                                        };
-                                        if (find_result != to_remove_from.end()) {
-                                            to_remove_from.erase(find_result);
-                                        }
-                                    });
-                  });
+    auto const remove_elements_from_prospects = [](std::vector<Prospects>::const_iterator const to_remove_begin,
+                                                   std::vector<Prospects>::const_iterator const to_remove_end,
+                                                   Prospects & to_remove_from) {
+        auto const new_end{ std::partition(to_remove_from.begin(),
+                                           to_remove_from.end(),
+                                           [&to_remove_begin, &to_remove_end](size_t const & to_remove_from_value) {
+                                               return std::none_of(
+                                                   to_remove_begin,
+                                                   to_remove_end,
+                                                   [&to_remove_from_value](Prospects const & to_remove) {
+                                                       assert(to_remove.size() == 1);
+                                                       return to_remove.front() == to_remove_from_value;
+                                                   });
+                                           }) };
+        to_remove_from.erase(new_end, to_remove_from.end());
+    };
+
+    for (auto it{ to_remove_from_begin }; it != to_remove_from_end; ++it) {
+        remove_elements_from_prospects(to_remove_begin, to_remove_end, *it);
+    }
+    // std::for_each(to_remove_from_begin,
+    //              to_remove_from_end,
+    //              [&remove_elements_from_prospects, &to_remove_begin, &to_remove_end](Prospects & prospects) {
+    //                  remove_elements_from_prospects(to_remove_begin, to_remove_end, prospects);
+    //              });
 
     auto const new_to_remove_from_begin{ std::partition(
         to_remove_from_begin,
@@ -242,16 +253,26 @@ number_t get_departure_product(std::vector<Ticket> const & tickets,
         }
     }
 
-    // use deduction to single-out pairs
+    // use deduction to single-out indexes
     auto const to_remove_from_begin{ std::partition(
         prospect_list.begin(),
         prospect_list.end(),
         [](Prospects const & prospects) { return prospects.size() == 1; }) };
-    deduce(prospect_list.cbegin(), to_remove_from_begin, to_remove_from_begin + 1, prospect_list.end());
+    deduce(prospect_list.cbegin(), to_remove_from_begin, to_remove_from_begin, prospect_list.end());
 
     // filter departure fields
+    number_t result{ 1 };
+    for (size_t ticket_data_index{}; ticket_data_index < prospect_list.size(); ++ticket_data_index) {
+        assert(prospect_list[ticket_data_index].size() == 1);
+        auto const rule_index{ prospect_list[ticket_data_index].front() };
+        auto const & rule{ field_rules[rule_index] };
+        if (rule.is_departure()) {
+            auto const value_on_my_ticket{ my_ticket[ticket_data_index] };
+            result *= value_on_my_ticket;
+        }
+    }
 
-    return 0;
+    return result;
 }
 
 //==============================================================================
@@ -291,7 +312,7 @@ std::string day_16_a(char const * input_file_path)
 std::string day_16_b(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
-    auto info{ Day_15_Data::from_string(input) };
+    auto const info{ Day_15_Data::from_string(input) };
     auto const departure_product{
         get_departure_product(info.nearby_tickets_values, info.field_rules, info.my_ticket_values)
     };
