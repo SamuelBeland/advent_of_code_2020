@@ -128,9 +128,6 @@
 // Count the number of valid passports - those that have all required fields and valid values. Continue to treat cid as
 // optional. In your batch file, how many passports are valid ?
 
-#include <algorithm>
-#include <array>
-
 #include "utils.hpp"
 #include <resources.hpp>
 
@@ -240,7 +237,7 @@ static constexpr std::array<Constraint, 7> CONSTRAINTS{
 //==============================================================================
 bool has_all_mandatory_fields(std::string_view const & entry)
 {
-    return std::all_of(CONSTRAINTS.cbegin(), CONSTRAINTS.cend(), [&entry](Constraint const & constraint) -> bool {
+    return all_of(CONSTRAINTS, [&entry](Constraint const & constraint) -> bool {
         return entry.find(constraint.id) != std::string::npos;
     });
 }
@@ -269,8 +266,8 @@ std::string day_4_a(char const * input_file_path)
     auto const input{ read_file(input_file_path) };
     auto const entries{ split(input, "\n\n") };
 
-    auto const valid_count{ std::count_if(entries.cbegin(), entries.cend(), [](std::string_view const & entry) -> bool {
-        return std::all_of(CONSTRAINTS.cbegin(), CONSTRAINTS.cend(), [&entry](Constraint const & constraint) -> bool {
+    auto const valid_count{ count_if(entries, [](std::string_view const & entry) -> bool {
+        return all_of(CONSTRAINTS, [&entry](Constraint const & constraint) -> bool {
             return entry.find(constraint.id) != std::string::npos;
         });
     }) };
@@ -282,8 +279,8 @@ std::string day_4_b(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
     auto const entries{ split(input, "\n\n") };
-    auto const valid_count{ std::count_if(entries.cbegin(), entries.cend(), [](std::string_view const & entry) -> bool {
-        return std::all_of(CONSTRAINTS.cbegin(), CONSTRAINTS.cend(), [&entry](Constraint const & constraint) -> bool {
+    auto const valid_count{ count_if(entries, [](std::string_view const & entry) -> bool {
+        return all_of(CONSTRAINTS, [&entry](Constraint const & constraint) -> bool {
             return satisfies_constraint(entry, constraint);
         });
     }) };

@@ -71,7 +71,7 @@ seat_id_t get_id(std::string_view const & seat)
     assert(seat.size() == 10);
 
     seat_id_t result{};
-    std::for_each(seat.cbegin(), seat.cend(), [&result](char const character) {
+    for_each(seat, [&result](char const character) {
         result <<= 1;
         if (character == 'B' || character == 'R') {
             ++result;
@@ -89,8 +89,8 @@ std::string day_5_a(char const * input_file_path)
 
     std::vector<seat_id_t> ids{};
     ids.resize(lines.size());
-    std::transform(lines.cbegin(), lines.cend(), ids.begin(), get_id);
-    auto const max_id{ *std::max_element(ids.cbegin(), ids.cend()) };
+    transform(lines, ids, get_id);
+    auto const max_id{ *max_element(ids) };
 
     return std::to_string(max_id);
 }
@@ -103,9 +103,10 @@ std::string day_5_b(char const * input_file_path)
 
     std::vector<seat_id_t> ids{};
     ids.resize(lines.size());
-    std::transform(lines.cbegin(), lines.cend(), ids.begin(), get_id);
-    std::sort(ids.begin(), ids.end());
+    transform(lines, ids, get_id);
+    sort(ids);
 
+    // TODO : adjacent something
     auto it{ ids.cbegin() + 1 };
     auto last_it{ ids.cbegin() };
     for (; it < ids.end(); ++it, ++last_it) {

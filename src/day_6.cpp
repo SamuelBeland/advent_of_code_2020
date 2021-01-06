@@ -80,9 +80,6 @@
 //
 // For each group, count the number of questions to which everyone answered "yes".What is the sum of those counts ?
 
-#include <algorithm>
-#include <numeric>
-
 #include "utils.hpp"
 #include <resources.hpp>
 
@@ -90,10 +87,8 @@
 auto get_unique_answers(std::string_view const & group)
 {
     std::string group_copy{ group };
-    std::sort(group_copy.begin(), group_copy.end());
-    auto const first_alpha_char{ std::find_if(group_copy.begin(), group_copy.end(), [](char const & character) {
-        return character != '\n';
-    }) };
+    sort(group_copy);
+    auto const first_alpha_char{ find_if(group_copy, [](char const & character) { return character != '\n'; }) };
     auto const unique_end{ std::unique(first_alpha_char, group_copy.end()) };
     auto const size{ unique_end - first_alpha_char };
     return size;
@@ -109,7 +104,7 @@ auto get_consensus_answers(std::string_view const & group)
             return person.find(candidate, 0) != std::string_view::npos;
         });
     };
-    auto const count{ std::count_if(candidates.cbegin(), candidates.cend(), every_person_has_candidate) };
+    auto const count{ count_if(candidates, every_person_has_candidate) };
     return count;
 }
 
@@ -118,11 +113,9 @@ std::string day_6_a(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
     auto const groups{ split(input, "\n\n") };
-    auto const sum_of_group_sums{ std::transform_reduce(groups.cbegin(),
-                                                        groups.cend(),
-                                                        std::string::difference_type(0),
-                                                        std::plus(),
-                                                        get_unique_answers) };
+    auto const sum_of_group_sums{
+        transform_reduce(groups, std::string::difference_type(0), get_unique_answers, std::plus())
+    };
     return std::to_string(sum_of_group_sums);
 }
 
@@ -131,10 +124,8 @@ std::string day_6_b(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
     auto const groups{ split(input, "\n\n") };
-    auto const sum_of_group_sums{ std::transform_reduce(groups.cbegin(),
-                                                        groups.cend(),
-                                                        std::string::difference_type(0),
-                                                        std::plus(),
-                                                        get_consensus_answers) };
+    auto const sum_of_group_sums{
+        transform_reduce(groups, std::string::difference_type(0), get_consensus_answers, std::plus())
+    };
     return std::to_string(sum_of_group_sums);
 }

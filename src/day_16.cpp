@@ -68,9 +68,7 @@ std::vector<Ticket> parse_ticket_values(std::string_view const string)
 {
     auto const lines{ split(string) };
     std::vector<Ticket> result{ lines.size() };
-    std::transform(lines.cbegin(), lines.cend(), result.begin(), [](std::string_view const & line) {
-        return scan_list<number_t>(line, ',');
-    });
+    transform(lines, result, [](std::string_view const & line) { return scan_list<number_t>(line, ','); });
     return result;
 }
 
@@ -93,14 +91,13 @@ void flatten_range(std::vector<Range> & non_overlapping_ranges, Range const & ne
 //==============================================================================
 std::vector<Range> get_valid_ranges(std::vector<Field_Rule> const & field_rules)
 {
-    return std::reduce(field_rules.cbegin(),
-                       field_rules.cend(),
-                       std::vector<Range>{},
-                       [](std::vector<Range> & valid_ranges, Field_Rule const & rule) -> std::vector<Range> & {
-                           flatten_range(valid_ranges, rule.low_range);
-                           flatten_range(valid_ranges, rule.high_range);
-                           return valid_ranges;
-                       });
+    return reduce(field_rules,
+                  std::vector<Range>{},
+                  [](std::vector<Range> & valid_ranges, Field_Rule const & rule) -> std::vector<Range> & {
+                      flatten_range(valid_ranges, rule.low_range);
+                      flatten_range(valid_ranges, rule.high_range);
+                      return valid_ranges;
+                  });
 }
 
 //==============================================================================

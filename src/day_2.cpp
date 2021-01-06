@@ -65,55 +65,31 @@ struct Password_Policy {
 struct Entry {
     Password_Policy password_policy;
     std::string_view password;
+    //==============================================================================
+    static Entry from_string(std::string_view const & string)
+    {
+        Entry entry;
+        scan(string,
+             "{}-{} {}: {}",
+             entry.password_policy.param_1,
+             entry.password_policy.param_2,
+             entry.password_policy.character,
+             entry.password);
+
+        return entry;
+    }
 };
 
 //==============================================================================
-Entry parse_entry(std::string_view const & line)
-{
-    Entry entry;
-    scan(line,
-         "{}-{} {}: {}",
-         entry.password_policy.param_1,
-         entry.password_policy.param_2,
-         entry.password_policy.character,
-         entry.password);
-
-    return entry;
-}
-
-//==============================================================================
-bool is_valid_part_a_entry(Entry const & entry)
-{
-    auto const count{ std::count(entry.password.begin(), entry.password.end(), entry.password_policy.character) };
-    auto const & min{ entry.password_policy.param_1 };
-    auto const & max{ entry.password_policy.param_2 };
-
-    return count >= min && count <= max;
-}
-
-//==============================================================================
-bool is_valid_part_b_entry(Entry const & entry)
-{
-    auto const & character{ entry.password_policy.character };
-    auto const & index_1{ entry.password_policy.param_1 };
-    auto const & index_2{ entry.password_policy.param_2 };
-    assert(index_1 > 0 && static_cast<size_t>(index_1) <= entry.password.size());
-    assert(index_2 > 0 && static_cast<size_t>(index_2) <= entry.password.size());
-
-    auto const index_1_matches{ entry.password[static_cast<size_t>(index_1) - 1] == character };
-    auto const index_2_matches{ entry.password[static_cast<size_t>(index_2) - 1] == character };
-    return index_1_matches != index_2_matches;
-}
-
-//==============================================================================
-std::string day_2(char const * input_file_path, bool (*predicate)(Entry const &))
+template<typename Pred>
+std::string day_2(char const * input_file_path, Pred const & predicate)
 {
     auto const input{ read_file(input_file_path) };
     auto const lines{ split(input) };
 
     std::vector<Entry> entries{ lines.size() };
-    std::transform(lines.cbegin(), lines.cend(), entries.begin(), parse_entry);
-    auto const count{ std::count_if(entries.cbegin(), entries.cend(), predicate) };
+    transform(lines, entries, Entry::from_string);
+    auto const count{ count_if(entries, predicate) };
 
     return std::to_string(count);
 }
@@ -121,11 +97,27 @@ std::string day_2(char const * input_file_path, bool (*predicate)(Entry const &)
 //==============================================================================
 std::string day_2_a(char const * input_file_path)
 {
-    return day_2(input_file_path, is_valid_part_a_entry);
+    return day_2(input_file_path, [](Entry const & entry) {
+        auto const char_count{ count(entry.password, entry.password_policy.character) };
+        auto const & min{ entry.password_policy.param_1 };
+        auto const & max{ entry.password_policy.param_2 };
+
+        return char_count >= min && char_count <= max;
+    });
 }
 
 //==============================================================================
 std::string day_2_b(char const * input_file_path)
 {
-    return day_2(input_file_path, is_valid_part_b_entry);
+    return day_2(input_file_path, [](Entry const & entry) {
+        auto const & character{ entry.password_policy.character };
+        auto const & index_1{ entry.password_policy.param_1 };
+        auto const & index_2{ entry.password_policy.param_2 };
+        assert(index_1 > 0 && static_cast<size_t>(index_1) <= entry.password.size());
+        assert(index_2 > 0 && static_cast<size_t>(index_2) <= entry.password.size());
+
+        auto const index_1_matches{ entry.password[static_cast<size_t>(index_1) - 1] == character };
+        auto const index_2_matches{ entry.password[static_cast<size_t>(index_2) - 1] == character };
+        return index_1_matches != index_2_matches;
+    });
 }

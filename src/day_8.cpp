@@ -104,19 +104,11 @@
 #include "utils.hpp"
 #include <resources.hpp>
 
-#include <cassert>
-#include <charconv>
-
+//==============================================================================
 enum class Operation { acc, jmp, nop };
 
+//==============================================================================
 using argument_t = int;
-
-struct Instruction {
-    Operation operation;
-    argument_t argument;
-};
-
-using Memory = std::vector<Instruction>;
 
 //==============================================================================
 Operation parse_operation(std::string_view const & string)
@@ -154,14 +146,22 @@ argument_t parse_argument(std::string_view const & string)
 }
 
 //==============================================================================
-Instruction parse_instruction(std::string_view const & line)
-{
-    std::string_view operation_string;
-    std::string_view argument_string;
-    scan(line, "{} {}", operation_string, argument_string);
-    Instruction const result{ parse_operation(operation_string), parse_argument(argument_string) };
-    return result;
-}
+struct Instruction {
+    Operation operation;
+    argument_t argument;
+    //==============================================================================
+    static Instruction from_string(std::string_view const & line)
+    {
+        std::string_view operation_string;
+        std::string_view argument_string;
+        scan(line, "{} {}", operation_string, argument_string);
+        Instruction const result{ parse_operation(operation_string), parse_argument(argument_string) };
+        return result;
+    }
+};
+
+//==============================================================================
+using Memory = std::vector<Instruction>;
 
 //==============================================================================
 Memory parse_memory(std::string_view const & input)
@@ -169,7 +169,7 @@ Memory parse_memory(std::string_view const & input)
     auto const lines{ split(input) };
     Memory memory{};
     memory.resize(lines.size());
-    std::transform(lines.cbegin(), lines.cend(), memory.begin(), parse_instruction);
+    transform(lines, memory, Instruction::from_string);
     return memory;
 }
 
@@ -228,7 +228,7 @@ public:
         }
     }
     //==============================================================================
-    argument_t get_accumulator_value() const { return m_accumulator; }
+    [[nodiscard]] argument_t get_accumulator_value() const { return m_accumulator; }
 
 private:
     //==============================================================================

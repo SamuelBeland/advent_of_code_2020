@@ -70,7 +70,6 @@
 //
 // How many individual bags are required inside your single shiny gold bag ?
 
-#include <algorithm>
 #include <optional>
 #include <set>
 
@@ -97,6 +96,25 @@ struct Color_Info {
 struct Rule {
     std::string_view color;
     Static_Vector<Color_Ownership<std::string_view>, MAX_OWNED> owned_colors;
+    //==============================================================================
+    static Rule from_string(std::string_view const & string)
+    {
+        Rule rule;
+        std::string_view leftover;
+        scan(string, "{} bags contain {}.", rule.color, leftover);
+
+        if (leftover != "no other bags") {
+            Static_Vector<std::string_view, MAX_OWNED> contained_strings;
+            scan_list(leftover, contained_strings, ", ");
+            for (auto const & contained_string : contained_strings) {
+                Color_Ownership<std::string_view> ownership;
+                scan(contained_string, "{} {} bag", ownership.quantity, ownership.color);
+                rule.owned_colors.push_back(ownership);
+            }
+        }
+
+        return rule;
+    }
 };
 
 //==============================================================================
@@ -123,7 +141,7 @@ public:
 
         std::vector<Rule> rules{};
         rules.resize(lines.size());
-        std::transform(lines.cbegin(), lines.cend(), rules.begin(), parse_rule);
+        transform(lines, rules, Rule::from_string);
 
         for (auto const & rule : rules) {
             add_rule(rule);
@@ -203,25 +221,6 @@ private:
             m_color_infos.emplace_back(Color_Info{ m_next_id++, {}, {} });
         }
         return emplace_result.first->second;
-    }
-    //==============================================================================
-    static Rule parse_rule(std::string_view const & line)
-    {
-        Rule rule;
-        std::string_view leftover;
-        scan(line, "{} bags contain {}.", rule.color, leftover);
-
-        if (leftover != "no other bags") {
-            Static_Vector<std::string_view, MAX_OWNED> contained_strings;
-            scan_list(leftover, contained_strings, ", ");
-            for (auto const & contained_string : contained_strings) {
-                Color_Ownership<std::string_view> ownership;
-                scan(contained_string, "{} {} bag", ownership.quantity, ownership.color);
-                rule.owned_colors.push_back(ownership);
-            }
-        }
-
-        return rule;
     }
 };
 

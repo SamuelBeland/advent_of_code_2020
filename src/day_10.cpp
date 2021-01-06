@@ -166,7 +166,7 @@ auto get_day_10_numbers(char const * const input_file_path)
     auto const input{ read_file(input_file_path) };
     auto const lines{ split(input) };
     auto numbers{ parse_number_list<number_t>(lines) };
-    std::sort(numbers.begin(), numbers.end());
+    sort(numbers);
     numbers.insert(numbers.begin(), 0);
     numbers.push_back(numbers.back() + BUILTIN_ADAPTER_RATING_DIFFERENCE);
     return numbers;
@@ -198,7 +198,7 @@ std::string day_10_a(char const * input_file_path)
             ++diff_by_three;
         }
     };
-    std::for_each(differences.cbegin(), differences.cend(), increase_counters);
+    for_each(differences, increase_counters);
 
     auto const result{ diff_by_one * diff_by_three };
     return std::to_string(result);

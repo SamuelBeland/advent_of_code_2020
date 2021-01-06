@@ -4,6 +4,7 @@
 #include <array>
 #include <cassert>
 #include <charconv>
+#include <numeric>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -200,7 +201,7 @@ void scan_list(std::string_view const & string, T & collection, char const separ
 
 //==============================================================================
 template<typename T>
-std::vector<T> scan_list(std::string_view const & string, std::string_view const & separator)
+[[nodiscard]] std::vector<T> scan_list(std::string_view const & string, std::string_view const & separator)
 {
     std::vector<T> result{};
     scan_list(string, result, separator);
@@ -209,9 +210,111 @@ std::vector<T> scan_list(std::string_view const & string, std::string_view const
 
 //==============================================================================
 template<typename T>
-std::vector<T> scan_list(std::string_view const & string, char const separator)
+[[nodiscard]] std::vector<T> scan_list(std::string_view const & string, char const separator)
 {
     std::vector<T> result{};
     scan_list(string, result, separator);
     return result;
+}
+
+template<typename Coll, typename Fn>
+void transform(Coll & coll, Fn const & fn)
+{
+    std::transform(coll.begin(), coll.end(), fn);
+}
+
+template<typename In, typename Dest, typename Fn>
+void transform(In const & coll, Dest & dest, Fn const & fn)
+{
+    std::transform(coll.cbegin(), coll.cend(), dest.begin(), fn);
+}
+
+template<typename In1, typename In2, typename Dest, typename Fn>
+void transform(In1 const & in1, In2 const & in2, Dest & out, Fn const & fn)
+{
+    std::transform(in1.cbegin(), in1.cend(), in2.cbegin(), dest.begin(), fn);
+}
+
+template<typename Coll, typename T, typename Fn>
+[[nodiscard]] auto reduce(Coll const & coll, T && init, Fn const & fn)
+{
+    return std::reduce(coll.cbegin(), coll.cend(), init, fn);
+}
+
+template<typename Coll, typename T, typename Transform_Fn, typename Reduce_Fn>
+[[nodiscard]] auto
+    transform_reduce(Coll const & coll, T && init, Transform_Fn const & transform_fn, Reduce_Fn const & reduce_fn)
+{
+    return std::transform_reduce(coll.cbegin(), coll.cend(), init, reduce_fn, transform_fn);
+}
+
+template<typename In1, typename In2, typename T, typename Transform_Fn, typename Reduce_Fn>
+[[nodiscard]] auto transform_reduce(In1 const & in1,
+                                    In2 const & in2,
+                                    T && init,
+                                    Transform_Fn const & transform_fn,
+                                    Reduce_Fn const & reduce_fn)
+{
+    return std::transform_reduce(in1.cbegin(), in1.cend(), in2.cbegin(), init, reduce_fn, transform_fn);
+}
+
+template<typename Coll>
+void sort(Coll & coll)
+{
+    std::sort(coll.begin(), coll.end());
+}
+
+template<typename Coll>
+[[nodiscard]] auto sort(Coll && coll)
+{
+    std::sort(coll.begin(), coll.end());
+    return coll;
+}
+
+template<typename Coll, typename T>
+[[nodiscard]] auto count(Coll const & coll, T const & value)
+{
+    return std::count(coll.cbegin(), coll.cend(), value);
+}
+
+template<typename Coll, typename Pred>
+[[nodiscard]] auto count_if(Coll const & coll, Pred const & pred)
+{
+    return std::count_if(coll.cbegin(), coll.cend(), pred);
+}
+
+template<typename Coll, typename Pred>
+[[nodiscard]] bool all_of(Coll const & coll, Pred const & pred)
+{
+    return std::all_of(coll.cbegin(), coll.cend(), pred);
+}
+
+template<typename Coll, typename Fn>
+void for_each(Coll const & coll, Fn const & fn)
+{
+    std::for_each(coll.cbegin(), coll.cend(), fn);
+}
+
+template<typename Coll, typename Fn>
+void for_each(Coll & coll, Fn const & fn)
+{
+    std::for_each(coll.begin(), coll.end(), fn);
+}
+
+template<typename Coll>
+[[nodiscard]] auto max_element(Coll const & coll)
+{
+    return std::max_element(coll.cbegin(), coll.cend());
+}
+
+template<typename Coll, typename Pred>
+[[nodiscard]] auto find_if(Coll & coll, Pred const & pred)
+{
+    return std::find_if(coll.begin(), coll.end(), pred);
+}
+
+template<typename Coll>
+[[nodiscard]] auto unique(Coll & coll)
+{
+    return std::unique(coll.begin(), coll.end());
 }

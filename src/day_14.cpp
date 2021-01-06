@@ -117,7 +117,6 @@
 // Execute the initialization program using an emulator for a version 2 decoder chip.What is the sum of all values left
 // in memory after it completes ?
 
-#include <numeric>
 #include <unordered_map>
 
 #include "utils.hpp"
@@ -131,11 +130,10 @@ class Memory : public std::unordered_map<uint64_t, uint64_t>
 public:
     uint64_t sum_values() const
     {
-        auto const sum{ std::accumulate(
-            cbegin(),
-            cend(),
-            uint64_t{},
-            [](uint64_t const value, value_type const & node) { return value + node.second; }) };
+        auto const sum{ reduce(*this,
+
+                               uint64_t{},
+                               [](uint64_t const value, value_type const & node) { return value + node.second; }) };
         return sum;
     }
 };

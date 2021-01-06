@@ -78,8 +78,6 @@
 // Figure out where the navigation instructions actually lead.What is the Manhattan distance between that location and
 // the ship's starting position?
 
-#include <numeric>
-
 #include "utils.hpp"
 #include <resources.hpp>
 
@@ -216,9 +214,7 @@ std::string day_12_a(char const * input_file_path)
     auto const input{ read_file(input_file_path) };
     auto const lines{ split(input) };
 
-    auto const position{
-        std::transform_reduce(lines.cbegin(), lines.cend(), Position{ 0, 0, Direction::east }, apply_step, parse_step)
-    };
+    auto const position{ transform_reduce(lines, Position{ 0, 0, Direction::east }, parse_step, apply_step) };
 
     auto const manhattan_distance{ std::abs(position.x) + std::abs(position.y) };
 

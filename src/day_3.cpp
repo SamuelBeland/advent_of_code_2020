@@ -83,12 +83,8 @@
 //
 // What do you get if you multiply together the number of trees encountered on each of the listed slopes ?
 
-#include <algorithm>
-#include <numeric>
-
-#include <resources.hpp>
-
 #include "utils.hpp"
+#include <resources.hpp>
 
 //==============================================================================
 enum class Position { free, tree };
@@ -188,14 +184,13 @@ std::string day_3_b(char const * input_file_path)
 
     Forest const forest{ input_file_path };
 
-    auto const multiply_tree_counts = [&forest](size_t const current_total, Slope const & slope) {
-        auto const new_total{ current_total * forest.count_trees_in_slope(slope) };
-        return new_total;
-    };
-
-    auto const product_of_tree_counts{
-        std::accumulate(SLOPES.cbegin(), SLOPES.cend(), size_t{ 1 }, multiply_tree_counts)
-    };
+    auto const product_of_tree_counts{ reduce(SLOPES,
+                                              size_t{ 1 },
+                                              [&forest](size_t const current_total, Slope const & slope) {
+                                                  auto const new_total{ current_total
+                                                                        * forest.count_trees_in_slope(slope) };
+                                                  return new_total;
+                                              }) };
 
     return std::to_string(product_of_tree_counts);
 }

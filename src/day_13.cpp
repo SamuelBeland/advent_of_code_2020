@@ -129,8 +129,6 @@
 // What is the earliest timestamp such that all of the listed bus IDs depart at offsets matching their positions in the
 // list ?
 
-#include <numeric>
-
 #include "utils.hpp"
 #include <resources.hpp>
 
