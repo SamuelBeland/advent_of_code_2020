@@ -75,9 +75,8 @@ std::vector<Ticket> parse_ticket_values(std::string_view const string)
 //==============================================================================
 void flatten_range(std::vector<Range> & non_overlapping_ranges, Range const & new_range)
 {
-    auto const colliding_range{ std::find_if(non_overlapping_ranges.begin(),
-                                             non_overlapping_ranges.end(),
-                                             [new_range](Range const & range) { return range.contains(new_range); }) };
+    auto const colliding_range{ find_if(non_overlapping_ranges,
+                                        [new_range](Range const & range) { return range.contains(new_range); }) };
 
     if (colliding_range != non_overlapping_ranges.end()) {
         auto const merged_new_range{ colliding_range->merge(new_range) };
@@ -106,17 +105,11 @@ std::vector<Range> get_valid_ranges(std::vector<Field_Rule> const & field_rules)
 {
     auto const valid_ranges{ get_valid_ranges(field_rules) };
     auto candidates{ tickets };
-    auto const candidates_valid_end{ std::remove_if(
-        candidates.begin(),
-        candidates.end(),
-        [&valid_ranges](Ticket const & ticket) {
-            return std::any_of(ticket.cbegin(), ticket.cend(), [&valid_ranges](number_t const value) {
-                return std::all_of(valid_ranges.cbegin(), valid_ranges.cend(), [value](Range const & range) {
-                    return !range.contains(value);
-                });
-            });
-        }) };
-    candidates.erase(candidates_valid_end, candidates.end());
+    remove_if(candidates, [&valid_ranges](Ticket const & ticket) {
+        return any_of(ticket, [&valid_ranges](number_t const value) {
+            return all_of(valid_ranges, [value](Range const & range) { return !range.contains(value); });
+        });
+    });
     return candidates;
 }
 
@@ -131,9 +124,7 @@ std::vector<number_t> get_invalid_numbers(std::vector<Ticket> const & tickets,
 
     auto const add_invalid_numbers = [&invalid_numbers, &valid_ranges](std::vector<number_t> const & values) {
         for (auto const number : values) {
-            if (std::all_of(valid_ranges.cbegin(), valid_ranges.cend(), [number](Range const & valid_range) {
-                    return !valid_range.contains(number);
-                })) {
+            if (all_of(valid_ranges, [number](Range const & valid_range) { return !valid_range.contains(number); })) {
                 invalid_numbers.emplace_back(number);
             }
         }
@@ -150,7 +141,7 @@ number_t get_ticket_scanning_error_rate(std::vector<Ticket> const & tickets,
 {
     auto const invalid_numbers{ get_invalid_numbers(tickets, field_rules) };
 
-    auto const result{ std::accumulate(invalid_numbers.cbegin(), invalid_numbers.cend(), number_t{}) };
+    auto const result{ reduce(invalid_numbers, number_t{}, std::plus{}) };
     return result;
 }
 
@@ -163,7 +154,7 @@ std::vector<Prospects> fill_prospect_list(size_t const number_of_fields)
 {
     std::vector<Prospects> results{ number_of_fields };
     results.front().resize(number_of_fields);
-    std::iota(results.front().begin(), results.front().end(), size_t{});
+    iota(results.front(), size_t{});
     std::fill(results.begin() + 1, results.end(), results.front());
     return results;
 }
@@ -177,28 +168,17 @@ void deduce(std::vector<Prospects>::const_iterator const to_remove_begin,
     auto const remove_elements_from_prospects = [](std::vector<Prospects>::const_iterator const to_remove_begin,
                                                    std::vector<Prospects>::const_iterator const to_remove_end,
                                                    Prospects & to_remove_from) {
-        auto const new_end{ std::partition(to_remove_from.begin(),
-                                           to_remove_from.end(),
-                                           [&to_remove_begin, &to_remove_end](size_t const & to_remove_from_value) {
-                                               return std::none_of(
-                                                   to_remove_begin,
-                                                   to_remove_end,
-                                                   [&to_remove_from_value](Prospects const & to_remove) {
-                                                       assert(to_remove.size() == 1);
-                                                       return to_remove.front() == to_remove_from_value;
-                                                   });
-                                           }) };
-        to_remove_from.erase(new_end, to_remove_from.end());
+        remove_if(to_remove_from, [&to_remove_begin, &to_remove_end](size_t const & to_remove_from_value) {
+            return std::none_of(to_remove_begin, to_remove_end, [&to_remove_from_value](Prospects const & to_remove) {
+                assert(to_remove.size() == 1);
+                return to_remove.front() == to_remove_from_value;
+            });
+        });
     };
 
     for (auto it{ to_remove_from_begin }; it != to_remove_from_end; ++it) {
         remove_elements_from_prospects(to_remove_begin, to_remove_end, *it);
     }
-    // std::for_each(to_remove_from_begin,
-    //              to_remove_from_end,
-    //              [&remove_elements_from_prospects, &to_remove_begin, &to_remove_end](Prospects & prospects) {
-    //                  remove_elements_from_prospects(to_remove_begin, to_remove_end, prospects);
-    //              });
 
     auto const new_to_remove_from_begin{ std::partition(
         to_remove_from_begin,
@@ -223,11 +203,9 @@ number_t get_departure_product(std::vector<Ticket> const & tickets,
         result.resize(number_of_fields);
         for (size_t field_index{}; field_index < number_of_fields; ++field_index) {
             result[field_index].resize(number_of_tickets);
-            std::transform(
-                tickets.cbegin(),
-                tickets.cend(),
-                result[field_index].begin(),
-                [field_index](std::vector<number_t> const & ticket_values) { return ticket_values[field_index]; });
+            transform(tickets, result[field_index], [field_index](std::vector<number_t> const & ticket_values) {
+                return ticket_values[field_index];
+            });
         }
         return result;
     };
@@ -240,21 +218,17 @@ number_t get_departure_product(std::vector<Ticket> const & tickets,
         auto const & ticket_data{ samples[ticket_data_index] };
         for (size_t field_index{}; field_index < field_rules.size(); ++field_index) {
             auto const & field{ field_rules[field_index] };
-            if (std::any_of(ticket_data.cbegin(), ticket_data.cend(), [&field](number_t const number) {
-                    return !field.contains(number);
-                })) {
+            if (any_of(ticket_data, [&field](number_t const number) { return !field.contains(number); })) {
                 auto & prospect{ prospect_list[ticket_data_index] };
-                auto const search_result{ std::lower_bound(prospect.begin(), prospect.end(), field_index) };
+                auto const search_result{ lower_bound(prospect, field_index) };
                 prospect.erase(search_result);
             }
         }
     }
 
     // use deduction to single-out indexes
-    auto const to_remove_from_begin{ std::partition(
-        prospect_list.begin(),
-        prospect_list.end(),
-        [](Prospects const & prospects) { return prospects.size() == 1; }) };
+    auto const to_remove_from_begin{ partition(prospect_list,
+                                               [](Prospects const & prospects) { return prospects.size() == 1; }) };
     deduce(prospect_list.cbegin(), to_remove_from_begin, to_remove_from_begin, prospect_list.end());
 
     // filter departure fields

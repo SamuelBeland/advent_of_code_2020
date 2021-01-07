@@ -318,3 +318,43 @@ template<typename Coll>
 {
     return std::unique(coll.begin(), coll.end());
 }
+
+template<typename Coll, typename Pred>
+auto remove_if(Coll & coll, Pred const & pred)
+{
+    auto const new_end{ std::remove_if(coll.begin(), coll.end(), pred) };
+    auto const num_removed{ std::distance(new_end, coll.end()) };
+    coll.erase(new_end, coll.end());
+    return num_removed;
+}
+
+template<typename Coll, typename T>
+void iota(Coll & coll, T const & init)
+{
+    std::iota(coll.begin(), coll.end(), init);
+}
+
+template<typename Coll, typename Pred>
+auto partition(Coll & coll, Pred const & pred)
+{
+    return std::partition(coll.begin(), coll.end(), pred);
+}
+
+template<typename Coll, typename Pred>
+[[nodiscard]] auto none_of(Coll const & coll, Pred const & pred)
+{
+    return std::none_of(coll.cbegin(), coll.cend(), pred);
+}
+
+template<typename Coll, typename Pred>
+[[nodiscard]] auto any_of(Coll const & coll, Pred const & pred)
+{
+    return std::any_of(coll.cbegin(), coll.cend(), pred);
+}
+
+template<typename Coll, typename T>
+[[nodiscard]] auto lower_bound(Coll const & coll, T const & value)
+{
+    assert(std::is_sorted(coll.cbegin(), coll.cend()));
+    return std::lower_bound(coll.cbegin(), coll.cend(), value);
+}
