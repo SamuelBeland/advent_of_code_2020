@@ -25,7 +25,7 @@ public:
     class const_iterator
     {
         typename Coll::const_iterator m_it;
-        Transformation const & m_transformation;
+        Transformation const * m_transformation;
 
     public:
         using iterator_category = typename Coll::iterator::iterator_category;
@@ -36,11 +36,12 @@ public:
 
         const_iterator(typename Coll::const_iterator && it, Transformation const & transformation)
             : m_it(std::forward<typename Coll::const_iterator>(it))
-            , m_transformation(transformation)
+            , m_transformation(&transformation)
         {
         }
+        const_iterator & operator=(const_iterator const &) = default;
 
-        auto operator*() const { return m_transformation(*m_it); }
+        auto operator*() const { return (*m_transformation)(*m_it); }
         bool operator!=(const_iterator const & other) const { return m_it != other.m_it; }
         const_iterator & operator++()
         {

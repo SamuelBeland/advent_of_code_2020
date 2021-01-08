@@ -58,9 +58,7 @@
 //
 // What is the ID of your seat ?
 
-#include <algorithm>
-
-#include "utils.hpp"
+#include "Ranges.hpp"
 #include <resources.hpp>
 
 using seat_id_t = int;
@@ -86,10 +84,7 @@ std::string day_5_a(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
     auto const lines{ split(input) };
-
-    std::vector<seat_id_t> ids{};
-    ids.resize(lines.size());
-    transform(lines, ids, get_id);
+    auto const ids = lines | views::transform(get_id);
     auto const max_id{ *max_element(ids) };
 
     return std::to_string(max_id);
