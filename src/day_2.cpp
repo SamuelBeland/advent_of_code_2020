@@ -47,12 +47,10 @@
 //
 // How many passwords are valid according to the new interpretation of the policies ?
 
-#include <algorithm>
-#include <cassert>
-
+#include "utils.hpp"
 #include <resources.hpp>
 
-#include "utils.hpp"
+#include "Ranges.hpp"
 
 //==============================================================================
 struct Password_Policy {
@@ -82,13 +80,11 @@ struct Entry {
 
 //==============================================================================
 template<typename Pred>
-std::string day_2(char const * input_file_path, Pred const & predicate)
+std::string day_2(char const * input_file_path, Pred && predicate)
 {
     auto const input{ read_file(input_file_path) };
     auto const lines{ split(input) };
-
-    std::vector<Entry> entries{ lines.size() };
-    transform(lines, entries, Entry::from_string);
+    auto const entries{ lines | views::transform(Entry::from_string) };
     auto const count{ count_if(entries, predicate) };
 
     return std::to_string(count);
