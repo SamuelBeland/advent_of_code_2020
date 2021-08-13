@@ -17,37 +17,11 @@ add_subdirectory("resources")
 
 include_directories("include" "${CMAKE_BINARY_DIR}/resources")
 
-# add_library(adventlib STATIC)
-# target_sources(adventlib PRIVATE
-#     "src/utils.cpp" "src/utils.hpp"
-#     "src/day_1.cpp"
-#     "src/day_2.cpp"
-#     "src/day_3.cpp"
-#     "src/day_4.cpp"
-#     "src/day_5.cpp"
-#     "src/day_6.cpp"
-#     "src/day_7.cpp"
-#     "src/day_8.cpp"
-#     "src/day_9.cpp"
-#     "src/day_10.cpp"
-#     "src/day_11.cpp"
-#     "src/day_12.cpp"
-#     "src/day_13.cpp"
-#     "src/day_14.cpp"
-#     "src/day_15.cpp"
-#     "src/day_16.cpp" "src/Ranges.hpp")
-# 
-# add_executable(main)
-# target_sources(main PRIVATE "src/main.cpp")
-# target_link_libraries(main adventlib)
-# 
-# add_executable(tests)
-# target_sources(tests PRIVATE "tests/main.cpp")
-# target_link_libraries(tests adventlib catch2)
-
-# add_library(adventlib STATIC)
-set(advent_sources
+add_library(adventlib STATIC)
+target_sources(adventlib PRIVATE
     "src/utils.cpp" "src/utils.hpp"
+    "src/Ranges.hpp"
+
     "src/day_1.cpp"
     "src/day_2.cpp"
     "src/day_3.cpp"
@@ -63,12 +37,12 @@ set(advent_sources
     "src/day_13.cpp"
     "src/day_14.cpp"
     "src/day_15.cpp"
-    "src/day_16.cpp" "src/Ranges.hpp")
+    "src/day_16.cpp")
 
 add_executable(main)
-target_sources(main PRIVATE "src/main.cpp" advent_sources)
-# target_link_libraries(main adventlib)
+target_sources(main PRIVATE "src/main.cpp")
+target_link_libraries(main adventlib)
 
 add_executable(tests)
-target_sources(tests PRIVATE "tests/main.cpp" advent_sources)
-# target_link_libraries(tests adventlib catch2)
+target_sources(tests PRIVATE "tests/main.cpp")
+target_link_libraries(tests adventlib catch2)
