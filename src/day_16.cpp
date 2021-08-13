@@ -177,7 +177,7 @@ std::vector<Ticket> parse_tickets(std::string_view const string)
 number_t get_ticket_scanning_error_rate(std::vector<Ticket> const & tickets, std::vector<Rule> const & rules)
 {
     auto const is_valid_entry = [&](number_t const & value) {
-        return all_of(rules, [&](Rule const & rule) { return rule.contains(value); });
+        return any_of(rules, [&](Rule const & rule) { return rule.contains(value); });
     };
 
     auto const accumulate_invalid_entries = [&](Ticket const & ticket) {
@@ -223,8 +223,6 @@ bool is_valid_ticket(Ticket const & ticket, std::vector<Rule> const & rules)
 
     return all_of(ticket, is_valid_field);
 }
-
-//==============================================================================
 
 } // namespace
 
