@@ -157,7 +157,7 @@ void scan(std::string_view const & string, std::string_view const & format, T & 
 
 //==============================================================================
 template<typename T>
-void scan_list(std::string_view const & string, T & collection, std::string_view const & separator)
+void scan_number_list(std::string_view const & string, T & collection, std::string_view const & separator)
 {
     size_t begin{};
     auto end{ string.find(separator) };
@@ -179,7 +179,7 @@ void scan_list(std::string_view const & string, T & collection, std::string_view
 
 //==============================================================================
 template<typename T>
-void scan_list(std::string_view const & string, T & collection, char const separator)
+void scan_number_list(std::string_view const & string, T & collection, char const separator)
 {
     size_t begin{};
     auto end{ string.find(separator) };
@@ -201,19 +201,19 @@ void scan_list(std::string_view const & string, T & collection, char const separ
 
 //==============================================================================
 template<typename T>
-[[nodiscard]] std::vector<T> scan_list(std::string_view const & string, std::string_view const & separator)
+[[nodiscard]] std::vector<T> scan_number_list(std::string_view const & string, std::string_view const & separator)
 {
     std::vector<T> result{};
-    scan_list(string, result, separator);
+    scan_number_list(string, result, separator);
     return result;
 }
 
 //==============================================================================
 template<typename T>
-[[nodiscard]] std::vector<T> scan_list(std::string_view const & string, char const separator)
+[[nodiscard]] std::vector<T> scan_number_list(std::string_view const & string, char const separator)
 {
     std::vector<T> result{};
-    scan_list(string, result, separator);
+    scan_number_list(string, result, separator);
     return result;
 }
 

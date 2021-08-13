@@ -105,7 +105,7 @@ struct Rule {
 
         if (leftover != "no other bags") {
             Static_Vector<std::string_view, MAX_OWNED> contained_strings;
-            scan_list(leftover, contained_strings, ", ");
+            scan_number_list(leftover, contained_strings, ", ");
             for (auto const & contained_string : contained_strings) {
                 Color_Ownership<std::string_view> ownership;
                 scan(contained_string, "{} {} bag", ownership.quantity, ownership.color);

@@ -69,7 +69,7 @@ using number_t = unsigned;
 std::string day_15(char const * input_file_path, number_t const last_turn)
 {
     auto const input{ read_file(input_file_path) };
-    auto const starting_numbers{ scan_list<number_t>(input, ',') };
+    auto const starting_numbers{ scan_number_list<number_t>(input, ',') };
 
     std::unordered_map<number_t, number_t> numbers{};
     numbers.reserve(last_turn / 2); // lets just reserve a metric ton of memory

@@ -1,8 +1,106 @@
-#include <algorithm>
-#include <numeric>
+//-- - Day 16: Ticket Translation-- -
+//
+// As you're walking to yet another connecting flight, you realize that one of the legs of your re-routed trip coming up
+// is on a high-speed train. However, the train ticket you were given is in a language you don't understand.You should
+// probably figure out what it says before you get to the train station after the next flight.
+//
+// Unfortunately, you can't actually read the words on the ticket. You can, however, read the numbers, and so you figure
+// out the fields these tickets must have and the valid ranges for values in those fields.
+//
+// You collect the rules for ticket fields, the numbers on your ticket, and the numbers on other nearby tickets for the
+// same train service(via the airport security cameras) together into a single document you can reference(your puzzle
+// input).
+//
+// The rules for ticket fields specify a list of fields that exist somewhere on the ticketand the valid ranges of values
+// for each field.For example, a rule like class : 1 - 3 or 5 - 7 means that one of the fields in every ticket is named
+// class and can be any value in the ranges 1 - 3 or 5 - 7 (inclusive, such that 3 and 5 are both valid in this field,
+// but 4 is not).
+//
+// Each ticket is represented by a single line of comma - separated values.The values are the numbers on the ticket in
+// the order they appear; every ticket has the same format.
+//
+// For example, consider this ticket:
+//
+//.--------------------------------------------------------.
+//| ? ? ? ? : 101 ? ? ? ? ? : 102 ? ? ? ? ? ? ? ? ? ? : 103 ? ? ? : 104 |
+//|                                                        |
+//| ? ? : 301 ? ? : 302 ? ? ? ? ? ? ? : 303 ? ? ? ? ? ? ? |
+//| ? ? : 401 ? ? : 402 ? ? ? ? ? ? ? ? : 403 ? ? ? ? ? ? ? ? ? |
+//'--------------------------------------------------------'
+//
+// Here, ? represents text in a language you don't understand. This ticket might be represented as
+// 101,102,103,104,301,302,303,401,402,403; of course, the actual train tickets you're looking at are much more
+// complicated.In any case, you've extracted just the numbers in such a way that the first number is always the same
+// specific field, the second number is always a different specific field, and so on - you just don't know what each
+// position actually means!
+//
+// Start by determining which tickets are completely invalid; these are tickets that contain values which aren't valid
+// for any field. Ignore your ticket for now.
+//
+// For example, suppose you have the following notes :
+//
+// class : 1 - 3 or 5 - 7
+// row : 6 - 11 or 33 - 44
+// seat : 13 - 40 or 45 - 50
+//
+// your ticket :
+// 7, 1, 14
+//
+// nearby tickets :
+//
+// 7, 3, 47
+// 40, 4, 50
+// 55, 2, 20
+// 38, 6, 12
+//
+// It doesn't matter which position corresponds to which field; you can identify invalid nearby tickets by considering
+// only whether tickets contain values that are not valid for any field. In this example, the values on the first nearby
+// ticket are all valid for at least one field. This is not true of the other three nearby tickets: the values 4, 55,
+// and 12 are are not valid for any field. Adding together all of the invalid values produces your ticket scanning error
+// rate: 4 + 55 + 12 = 71.
+//
+// Consider the validity of the nearby tickets you scanned.
+//
+// What is your ticket scanning error rate ?
+//
+// Your puzzle answer was 19060.
+//
+// The first half of this puzzle is complete!It provides one gold star : *
+//
+//-- - Part Two-- -
+//
+// Now that you've identified which tickets contain invalid values, discard those tickets entirely. Use the remaining
+// valid tickets to determine which field is which.
+//
+// Using the valid ranges for each field, determine what order the fields appear on the tickets.The order is consistent
+// between all tickets : if seat is the third field, it is the third field on every ticket, including your ticket.
+//
+// For example, suppose you have the following notes :
+//
+// class : 0 - 1 or 4 - 19
+// row : 0 - 5 or 8 - 19
+// seat : 0 - 13 or 16 - 19
+//
+// your ticket :
+// 11, 12, 13
+//
+// nearby tickets :
+//
+// 3, 9, 18
+// 15, 1, 5
+// 5, 14, 9
+//
+// Based on the nearby tickets in the above example, the first position must be row, the second position must be class,
+// and the third position must be seat; you can conclude that in your ticket, class is 12, row is 11, and seat is 13.
+//
+// Once you work out which field is which, look for the six fields on your ticket that start with the word
+// departure.What do you get if you multiply those six values together ?
 
 #include "utils.hpp"
 #include <resources.hpp>
+
+#include <algorithm>
+#include <iterator>
 
 using number_t = uint64_t;
 
@@ -23,7 +121,7 @@ struct Range {
 };
 
 //==============================================================================
-struct Field_Rule {
+struct Rule {
     std::string name;
     Range low_range;
     Range high_range;
@@ -35,9 +133,9 @@ struct Field_Rule {
     }
     [[nodiscard]] bool is_departure() const { return name.find("departure") == 0; }
     //==============================================================================
-    [[nodiscard]] static Field_Rule from_string(std::string_view const & line)
+    [[nodiscard]] static Rule from_string(std::string_view const & line)
     {
-        Field_Rule result{};
+        Rule result{};
         scan(line,
              "{}: {}-{} or {}-{}",
              result.name,
@@ -47,212 +145,57 @@ struct Field_Rule {
              result.high_range.max);
         return result;
     }
-    //==============================================================================
-    [[nodiscard]] static std::vector<Field_Rule> from_list_string(std::string_view const & string)
-    {
-        auto const lines{ split(string) };
-        std::vector<Field_Rule> result{};
-        result.reserve(lines.size());
-        for (auto const & line : lines) {
-            result.emplace_back(from_string(line));
-        }
-        return result;
-    }
 };
+
+//==============================================================================
+[[nodiscard]] std::vector<Rule> parse_rules(std::string_view const & string)
+{
+    auto const lines{ split(string) };
+    std::vector<Rule> result{};
+    result.reserve(lines.size());
+    std::transform(lines.cbegin(), lines.cend(), std::back_inserter(result), [](std::string_view const & line) {
+        return Rule::from_string(line);
+    });
+    return result;
+}
 
 //==============================================================================
 using Ticket = std::vector<number_t>;
 
 //==============================================================================
-std::vector<Ticket> parse_ticket_values(std::string_view const string)
+std::vector<Ticket> parse_tickets(std::string_view const string)
 {
     auto const lines{ split(string) };
     std::vector<Ticket> result{ lines.size() };
-    transform(lines, result, [](std::string_view const & line) { return scan_list<number_t>(line, ','); });
+    transform(lines, result, [](std::string_view const & line) { return scan_number_list<number_t>(line, ','); });
     return result;
 }
 
 //==============================================================================
-void flatten_range(std::vector<Range> & non_overlapping_ranges, Range const & new_range)
+number_t get_ticket_scanning_error_rate(std::vector<Ticket> const & tickets, std::vector<Rule> const & rules)
 {
-    auto const colliding_range{ find_if(non_overlapping_ranges,
-                                        [new_range](Range const & range) { return range.contains(new_range); }) };
+    auto const is_valid_entry = [&](number_t const & value) {
+        return all_of(rules, [&](Rule const & rule) { return rule.contains(value); });
+    };
 
-    if (colliding_range != non_overlapping_ranges.end()) {
-        auto const merged_new_range{ colliding_range->merge(new_range) };
-        non_overlapping_ranges.erase(colliding_range);
-        flatten_range(non_overlapping_ranges, merged_new_range);
-    } else {
-        non_overlapping_ranges.push_back(new_range);
-    }
-}
-
-//==============================================================================
-std::vector<Range> get_valid_ranges(std::vector<Field_Rule> const & field_rules)
-{
-    return reduce(field_rules,
-                  std::vector<Range>{},
-                  [](std::vector<Range> & valid_ranges, Field_Rule const & rule) -> std::vector<Range> & {
-                      flatten_range(valid_ranges, rule.low_range);
-                      flatten_range(valid_ranges, rule.high_range);
-                      return valid_ranges;
-                  });
-}
-
-//==============================================================================
-[[nodiscard]] std::vector<Ticket> get_valid_tickets(std::vector<Ticket> const & tickets,
-                                                    std::vector<Field_Rule> const & field_rules)
-{
-    auto const valid_ranges{ get_valid_ranges(field_rules) };
-    auto candidates{ tickets };
-    remove_if(candidates, [&valid_ranges](Ticket const & ticket) {
-        return any_of(ticket, [&valid_ranges](number_t const value) {
-            return all_of(valid_ranges, [value](Range const & range) { return !range.contains(value); });
+    auto const accumulate_invalid_entries = [&](Ticket const & ticket) {
+        return reduce(ticket, number_t{}, [&](number_t const & error_rate_for_ticket, number_t const & value) {
+            return is_valid_entry(value) ? error_rate_for_ticket : error_rate_for_ticket + value;
         });
+    };
+
+    return reduce(tickets, number_t{}, [&](number_t const & error_rate, Ticket const & ticket) {
+        return error_rate + accumulate_invalid_entries(ticket);
     });
-    return candidates;
 }
 
 //==============================================================================
-std::vector<number_t> get_invalid_numbers(std::vector<Ticket> const & tickets,
-                                          std::vector<Field_Rule> const & field_rules)
-{
-    auto const valid_ranges{ get_valid_ranges(field_rules) };
-    std::vector<number_t> invalid_numbers{};
-
-    // auto const test = std::reduce()
-
-    auto const add_invalid_numbers = [&invalid_numbers, &valid_ranges](std::vector<number_t> const & values) {
-        for (auto const number : values) {
-            if (all_of(valid_ranges, [number](Range const & valid_range) { return !valid_range.contains(number); })) {
-                invalid_numbers.emplace_back(number);
-            }
-        }
-    };
-
-    std::for_each(tickets.cbegin(), tickets.cend(), add_invalid_numbers);
-
-    return invalid_numbers;
-}
-
-//==============================================================================
-number_t get_ticket_scanning_error_rate(std::vector<Ticket> const & tickets,
-                                        std::vector<Field_Rule> const & field_rules)
-{
-    auto const invalid_numbers{ get_invalid_numbers(tickets, field_rules) };
-
-    auto const result{ reduce(invalid_numbers, number_t{}, std::plus{}) };
-    return result;
-}
-
-//==============================================================================
-using Prospects = std::vector<size_t>;
-using Field_Samples = std::vector<number_t>;
-
-//==============================================================================
-std::vector<Prospects> fill_prospect_list(size_t const number_of_fields)
-{
-    std::vector<Prospects> results{ number_of_fields };
-    results.front().resize(number_of_fields);
-    iota(results.front(), size_t{});
-    std::fill(results.begin() + 1, results.end(), results.front());
-    return results;
-}
-
-//==============================================================================
-void deduce(std::vector<Prospects>::const_iterator const to_remove_begin,
-            std::vector<Prospects>::const_iterator const to_remove_end,
-            std::vector<Prospects>::iterator const to_remove_from_begin,
-            std::vector<Prospects>::iterator const to_remove_from_end)
-{
-    auto const remove_elements_from_prospects = [](std::vector<Prospects>::const_iterator const to_remove_begin,
-                                                   std::vector<Prospects>::const_iterator const to_remove_end,
-                                                   Prospects & to_remove_from) {
-        remove_if(to_remove_from, [&to_remove_begin, &to_remove_end](size_t const & to_remove_from_value) {
-            return std::none_of(to_remove_begin, to_remove_end, [&to_remove_from_value](Prospects const & to_remove) {
-                assert(to_remove.size() == 1);
-                return to_remove.front() == to_remove_from_value;
-            });
-        });
-    };
-
-    for (auto it{ to_remove_from_begin }; it != to_remove_from_end; ++it) {
-        remove_elements_from_prospects(to_remove_begin, to_remove_end, *it);
-    }
-
-    auto const new_to_remove_from_begin{ std::partition(
-        to_remove_from_begin,
-        to_remove_from_end,
-        [](Prospects const & prospects) { return prospects.size() == 1; }) };
-
-    if (new_to_remove_from_begin != to_remove_from_begin) {
-        deduce(to_remove_end, new_to_remove_from_begin, new_to_remove_from_begin, to_remove_from_end);
-    }
-}
-
-//==============================================================================
-number_t get_departure_product(std::vector<Ticket> const & tickets,
-                               std::vector<Field_Rule> const & field_rules,
-                               std::vector<number_t> const & my_ticket)
-{
-    // get valid, rotated data
-    auto const organize_ticket_values_by_fields = [](std::vector<Ticket> const & tickets) {
-        std::vector<Field_Samples> result{};
-        auto const number_of_fields{ tickets.front().size() };
-        auto const number_of_tickets{ tickets.size() };
-        result.resize(number_of_fields);
-        for (size_t field_index{}; field_index < number_of_fields; ++field_index) {
-            result[field_index].resize(number_of_tickets);
-            transform(tickets, result[field_index], [field_index](std::vector<number_t> const & ticket_values) {
-                return ticket_values[field_index];
-            });
-        }
-        return result;
-    };
-
-    auto const samples{ organize_ticket_values_by_fields(get_valid_tickets(tickets, field_rules)) };
-    auto prospect_list{ fill_prospect_list(field_rules.size()) };
-
-    // remove all prospects that do not match data
-    for (size_t ticket_data_index{}; ticket_data_index < samples.size(); ++ticket_data_index) {
-        auto const & ticket_data{ samples[ticket_data_index] };
-        for (size_t field_index{}; field_index < field_rules.size(); ++field_index) {
-            auto const & field{ field_rules[field_index] };
-            if (any_of(ticket_data, [&field](number_t const number) { return !field.contains(number); })) {
-                auto & prospect{ prospect_list[ticket_data_index] };
-                auto const search_result{ lower_bound(prospect, field_index) };
-                prospect.erase(search_result);
-            }
-        }
-    }
-
-    // use deduction to single-out indexes
-    auto const to_remove_from_begin{ partition(prospect_list,
-                                               [](Prospects const & prospects) { return prospects.size() == 1; }) };
-    deduce(prospect_list.cbegin(), to_remove_from_begin, to_remove_from_begin, prospect_list.end());
-
-    // filter departure fields
-    number_t result{ 1 };
-    for (size_t ticket_data_index{}; ticket_data_index < prospect_list.size(); ++ticket_data_index) {
-        assert(prospect_list[ticket_data_index].size() == 1);
-        auto const rule_index{ prospect_list[ticket_data_index].front() };
-        auto const & rule{ field_rules[rule_index] };
-        if (rule.is_departure()) {
-            auto const value_on_my_ticket{ my_ticket[ticket_data_index] };
-            result *= value_on_my_ticket;
-        }
-    }
-
-    return result;
-}
-
-//==============================================================================
-struct Day_15_Data {
-    std::vector<Field_Rule> field_rules;
-    std::vector<number_t> my_ticket_values;
-    std::vector<std::vector<number_t>> nearby_tickets_values;
+struct Day_16_Data {
+    std::vector<Rule> rules;
+    Ticket my_ticket;
+    std::vector<Ticket> nearby_tickets;
     //==============================================================================
-    static Day_15_Data from_string(std::string_view const & string)
+    static Day_16_Data from_string(std::string_view const & string)
     {
         std::string_view ticket_fields_string;
         std::string_view my_ticket_values_string;
@@ -263,18 +206,30 @@ struct Day_15_Data {
              my_ticket_values_string,
              nearby_tickets_values_string);
 
-        return Day_15_Data{ Field_Rule::from_list_string(ticket_fields_string),
-                            scan_list<number_t>(my_ticket_values_string, ','),
-                            parse_ticket_values(nearby_tickets_values_string) };
+        return Day_16_Data{ parse_rules(ticket_fields_string),
+                            scan_number_list<number_t>(my_ticket_values_string, ','),
+                            parse_tickets(nearby_tickets_values_string) };
     }
 };
+
+//==============================================================================
+bool is_valid_ticket(Ticket const & ticket, std::vector<Rule> const & rules)
+{
+    auto const is_valid_field = [&](number_t const & number) {
+        return any_of(rules, [&](Rule const & rule) { return rule.contains(number); });
+    };
+
+    return all_of(ticket, is_valid_field);
+}
+
+//==============================================================================
 
 //==============================================================================
 std::string day_16_a(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
-    auto const info{ Day_15_Data::from_string(input) };
-    auto const error_rate{ get_ticket_scanning_error_rate(info.nearby_tickets_values, info.field_rules) };
+    auto const info{ Day_16_Data::from_string(input) };
+    auto const error_rate{ get_ticket_scanning_error_rate(info.nearby_tickets, info.rules) };
 
     return std::to_string(error_rate);
 }
@@ -283,10 +238,6 @@ std::string day_16_a(char const * input_file_path)
 std::string day_16_b(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
-    auto const info{ Day_15_Data::from_string(input) };
-    auto const departure_product{
-        get_departure_product(info.nearby_tickets_values, info.field_rules, info.my_ticket_values)
-    };
-
-    return std::to_string(departure_product);
+    auto const data{ Day_16_Data::from_string(input) };
+    return "coucou";
 }
