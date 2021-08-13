@@ -61,6 +61,8 @@
 #include "Ranges.hpp"
 #include <resources.hpp>
 
+namespace
+{
 using seat_id_t = int;
 
 //==============================================================================
@@ -78,6 +80,8 @@ seat_id_t get_id(std::string_view const & seat)
 
     return result;
 }
+
+} // namespace
 
 //==============================================================================
 std::string day_5_a(char const * input_file_path)

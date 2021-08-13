@@ -99,6 +99,8 @@
 #include "utils.hpp"
 #include <resources.hpp>
 
+namespace
+{
 using number_t = size_t;
 
 //==============================================================================
@@ -188,9 +190,9 @@ number_t find_weakness(number_t const intruder, std::vector<number_t> const & nu
             return result;
         }
     }
-    assert(false);
-    return {};
 }
+
+} // namespace
 
 //==============================================================================
 std::string day_9_a(char const * input_file_path)

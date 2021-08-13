@@ -222,8 +222,8 @@
 #include "utils.hpp"
 #include <resources.hpp>
 
-class Ferry;
-
+namespace
+{
 //==============================================================================
 class Ferry
 {
@@ -382,6 +382,8 @@ private:
         return Tile::empty;
     }
 };
+
+} // namespace
 
 //==============================================================================
 std::string day_11_a(char const * input_file_path)

@@ -156,6 +156,8 @@
 #include "utils.hpp"
 #include <resources.hpp>
 
+namespace
+{
 using number_t = size_t;
 
 //==============================================================================
@@ -183,28 +185,6 @@ std::vector<number_t> compute_differences(std::vector<number_t> const & numbers)
 }
 
 //==============================================================================
-std::string day_10_a(char const * input_file_path)
-{
-    auto const numbers{ get_day_10_numbers(input_file_path) };
-    auto const differences{ compute_differences(numbers) };
-
-    size_t diff_by_one{};
-    size_t diff_by_three{};
-
-    auto const increase_counters = [&diff_by_one, &diff_by_three](number_t const number) {
-        if (number == 1) {
-            ++diff_by_one;
-        } else if (number == 3) {
-            ++diff_by_three;
-        }
-    };
-    for_each(differences, increase_counters);
-
-    auto const result{ diff_by_one * diff_by_three };
-    return std::to_string(result);
-}
-
-//==============================================================================
 constexpr number_t fucked_up_fibo(number_t const n)
 {
     if (n == 0) {
@@ -225,6 +205,30 @@ constexpr std::array<number_t, N> get_pre_computed_fucked_up_fibo()
         result[i] = fucked_up_fibo(i);
     }
     return result;
+}
+
+} // namespace
+
+//==============================================================================
+std::string day_10_a(char const * input_file_path)
+{
+    auto const numbers{ get_day_10_numbers(input_file_path) };
+    auto const differences{ compute_differences(numbers) };
+
+    size_t diff_by_one{};
+    size_t diff_by_three{};
+
+    auto const increase_counters = [&diff_by_one, &diff_by_three](number_t const number) {
+        if (number == 1) {
+            ++diff_by_one;
+        } else if (number == 3) {
+            ++diff_by_three;
+        }
+    };
+    for_each(differences, increase_counters);
+
+    auto const result{ diff_by_one * diff_by_three };
+    return std::to_string(result);
 }
 
 //==============================================================================

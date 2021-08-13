@@ -122,6 +122,8 @@
 #include "utils.hpp"
 #include <resources.hpp>
 
+namespace
+{
 //==============================================================================
 class Memory : public std::unordered_map<uint64_t, uint64_t>
 {
@@ -236,6 +238,8 @@ std::vector<Init_Section> parse_init_sequence(std::string const & input)
 
     return result;
 }
+
+} // namespace
 
 //==============================================================================
 std::string day_14_a(char const * input_file_path)

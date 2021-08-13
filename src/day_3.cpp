@@ -86,6 +86,8 @@
 #include "utils.hpp"
 #include <resources.hpp>
 
+namespace
+{
 //==============================================================================
 enum class Position { free, tree };
 
@@ -161,6 +163,8 @@ private:
         return m_data[x + y * m_width];
     }
 };
+
+} // namespace
 
 //==============================================================================
 std::string day_3_a(char const * input_file_path)

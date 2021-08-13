@@ -83,6 +83,8 @@
 #include "utils.hpp"
 #include <resources.hpp>
 
+namespace
+{
 //==============================================================================
 auto get_unique_answers(std::string_view const & group)
 {
@@ -107,6 +109,8 @@ auto get_consensus_answers(std::string_view const & group)
     auto const count{ count_if(candidates, every_person_has_candidate) };
     return count;
 }
+
+} // namespace
 
 //==============================================================================
 std::string day_6_a(char const * input_file_path)

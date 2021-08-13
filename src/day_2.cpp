@@ -52,6 +52,8 @@
 
 #include "Ranges.hpp"
 
+namespace
+{
 //==============================================================================
 struct Password_Policy {
     char character;
@@ -89,6 +91,8 @@ std::string day_2(char const * input_file_path, Pred && predicate)
 
     return std::to_string(count);
 }
+
+} // namespace
 
 //==============================================================================
 std::string day_2_a(char const * input_file_path)

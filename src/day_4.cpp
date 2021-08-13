@@ -131,6 +131,8 @@
 #include "utils.hpp"
 #include <resources.hpp>
 
+namespace
+{
 template<typename T>
 T parse_string(std::string_view const & string)
 {
@@ -228,11 +230,10 @@ struct Constraint {
 };
 
 //==============================================================================
-static constexpr std::array<Constraint, 7> CONSTRAINTS{
-    Constraint{ "byr:", is_byr_valid }, Constraint{ "iyr:", is_iyr_valid }, Constraint{ "eyr:", is_eyr_valid },
-    Constraint{ "hgt:", is_hgt_valid }, Constraint{ "hcl:", is_hcl_valid }, Constraint{ "ecl:", is_ecl_valid },
-    Constraint{ "pid:", is_pid_valid }
-};
+constexpr std::array<Constraint, 7> CONSTRAINTS{ Constraint{ "byr:", is_byr_valid }, Constraint{ "iyr:", is_iyr_valid },
+                                                 Constraint{ "eyr:", is_eyr_valid }, Constraint{ "hgt:", is_hgt_valid },
+                                                 Constraint{ "hcl:", is_hcl_valid }, Constraint{ "ecl:", is_ecl_valid },
+                                                 Constraint{ "pid:", is_pid_valid } };
 
 //==============================================================================
 bool has_all_mandatory_fields(std::string_view const & entry)
@@ -259,6 +260,8 @@ bool satisfies_constraint(std::string_view const & entry, Constraint const & con
     auto const is_valid{ constraint.validate(value_string) };
     return is_valid;
 }
+
+} // namespace
 
 //==============================================================================
 std::string day_4_a(char const * input_file_path)

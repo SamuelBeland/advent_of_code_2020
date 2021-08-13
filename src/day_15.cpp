@@ -63,6 +63,8 @@
 #include "utils.hpp"
 #include <resources.hpp>
 
+namespace
+{
 using number_t = unsigned;
 
 //==============================================================================
@@ -95,6 +97,8 @@ std::string day_15(char const * input_file_path, number_t const last_turn)
 
     return std::to_string(last_number);
 }
+
+} // namespace
 
 //==============================================================================
 std::string day_15_a(char const * input_file_path)

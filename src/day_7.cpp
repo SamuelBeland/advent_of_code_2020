@@ -76,6 +76,8 @@
 #include "utils.hpp"
 #include <resources.hpp>
 
+namespace
+{
 using color_id_t = unsigned;
 
 template<typename T>
@@ -84,8 +86,8 @@ struct Color_Ownership {
     unsigned quantity;
 };
 
-static constexpr size_t MAX_OWNED = 4;
-static constexpr size_t MAX_OWNERS = 32;
+constexpr size_t MAX_OWNED = 4;
+constexpr size_t MAX_OWNERS = 32;
 
 struct Color_Info {
     color_id_t id;
@@ -224,7 +226,9 @@ private:
     }
 };
 
-static constexpr std::string_view TARGET = "shiny gold";
+constexpr std::string_view TARGET = "shiny gold";
+
+} // namespace
 
 //==============================================================================
 std::string day_7_a(char const * input_file_path)

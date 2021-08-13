@@ -102,6 +102,8 @@
 #include <algorithm>
 #include <iterator>
 
+namespace
+{
 using number_t = uint64_t;
 
 //==============================================================================
@@ -223,6 +225,8 @@ bool is_valid_ticket(Ticket const & ticket, std::vector<Rule> const & rules)
 }
 
 //==============================================================================
+
+} // namespace
 
 //==============================================================================
 std::string day_16_a(char const * input_file_path)

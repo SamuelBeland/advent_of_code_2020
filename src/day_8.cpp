@@ -104,6 +104,8 @@
 #include "utils.hpp"
 #include <resources.hpp>
 
+namespace
+{
 //==============================================================================
 enum class Operation { acc, jmp, nop };
 
@@ -250,6 +252,8 @@ private:
         }
     }
 };
+
+} // namespace
 
 //==============================================================================
 std::string day_8_a(char const * input_file_path)

@@ -81,6 +81,8 @@
 #include "utils.hpp"
 #include <resources.hpp>
 
+namespace
+{
 enum class Action : char { north = 'N', south = 'S', east = 'E', west = 'W', left = 'L', right = 'R', forward = 'F' };
 
 struct Step {
@@ -207,6 +209,8 @@ Position & apply_step(Position & position, Step const & step)
     assert(false);
     return position;
 }
+
+} // namespace
 
 //==============================================================================
 std::string day_12_a(char const * input_file_path)
