@@ -113,13 +113,6 @@ struct Range {
 
     //==============================================================================
     [[nodiscard]] bool contains(number_t const value) const { return value >= min && value <= max; }
-    //==============================================================================
-    [[nodiscard]] bool contains(Range const & other) const { return contains(other.min) || contains(other.max); }
-    //==============================================================================
-    [[nodiscard]] Range merge(Range const & other) const
-    {
-        return Range{ min < other.min ? min : other.min, max > other.max ? max : other.max };
-    }
 };
 
 //==============================================================================
@@ -132,6 +125,19 @@ struct Rule {
     [[nodiscard]] bool contains(number_t const value) const
     {
         return low_range.contains(value) || high_range.contains(value);
+    }
+    [[nodiscard]] bool contains_all(std::vector<number_t> const & values) const
+    {
+        assert(std::is_sorted(std::cbegin(values), std::cend(values)));
+        if (!low_range.contains(values.front()) || !high_range.contains(values.back())) {
+            return false;
+        }
+
+        auto const end_of_low_range{ std::upper_bound(std::cbegin(values), std::cend(values), low_range.max) };
+        auto const start_of_high_range{ std::lower_bound(end_of_low_range, std::cend(values), high_range.min) };
+
+        // no values between low_range.max and high_range.min
+        return end_of_low_range == start_of_high_range;
     }
     [[nodiscard]] bool is_departure() const { return name.find("departure") == 0; }
     //==============================================================================
@@ -192,10 +198,59 @@ number_t get_ticket_scanning_error_rate(std::vector<Ticket> const & tickets, std
 }
 
 //==============================================================================
+std::vector<size_t> build_index_list(size_t const number_of_items)
+{
+    std::vector<size_t> index_list{};
+    index_list.resize(number_of_items);
+    std::iota(std::begin(index_list), std::end(index_list), size_t{});
+    return index_list;
+}
+
+//==============================================================================
+struct Solved_Field {
+    size_t rule_index;
+    size_t field_index;
+};
+
+std::vector<Solved_Field> deduce(std::vector<Ticket> const & tickets, std::vector<Rule> const & rules);
+
+//==============================================================================
 struct Day_16_Data {
     std::vector<Rule> rules;
     Ticket my_ticket;
     std::vector<Ticket> nearby_tickets;
+    //==============================================================================
+    [[nodiscard]] number_t get_departure_product() const
+    {
+        auto const departure_rule_indexes{ get_departure_rule_indexes() };
+        auto const solution{ deduce(nearby_tickets, rules) };
+
+        auto const get_field_index_from_rule_index = [&](size_t const rule_index) {
+            auto const solved_field_it{ find_if(solution, [&](Solved_Field const & solved_field) {
+                return solved_field.rule_index == rule_index;
+            }) };
+            assert(solved_field_it != std::cend(solution));
+            return solved_field_it->field_index;
+        };
+
+        auto const result{ transform_reduce(
+            departure_rule_indexes,
+            number_t{ 1 },
+            [&](size_t const departure_rule) {
+                auto const field_index{ get_field_index_from_rule_index(departure_rule) };
+                return my_ticket[field_index];
+            },
+            std::multiplies()) };
+
+        return result;
+    }
+    //==============================================================================
+    [[nodiscard]] std::vector<size_t> get_departure_rule_indexes() const
+    {
+        auto departure_rule_indexes{ build_index_list(rules.size()) };
+        remove_if(departure_rule_indexes, [&](size_t const rule_index) { return !rules[rule_index].is_departure(); });
+        return departure_rule_indexes;
+    }
     //==============================================================================
     static Day_16_Data from_string(std::string_view const & string)
     {
@@ -215,13 +270,146 @@ struct Day_16_Data {
 };
 
 //==============================================================================
-bool is_valid_ticket(Ticket const & ticket, std::vector<Rule> const & rules)
+std::vector<Ticket> remove_invalid_tickets(std::vector<Ticket> const & tickets, std::vector<Rule> const & rules)
 {
-    auto const is_valid_field = [&](number_t const & number) {
-        return any_of(rules, [&](Rule const & rule) { return rule.contains(number); });
+    auto const is_valid_ticket = [&](Ticket const & ticket) {
+        auto const is_valid_field = [&](number_t const & number) {
+            return any_of(rules, [&](Rule const & rule) { return rule.contains(number); });
+        };
+
+        return all_of(ticket, is_valid_field);
     };
 
-    return all_of(ticket, is_valid_field);
+    std::vector<Ticket> valid_tickets{};
+    valid_tickets.reserve(tickets.size());
+    std::copy_if(std::cbegin(tickets), std::cend(tickets), std::back_inserter(valid_tickets), is_valid_ticket);
+    return valid_tickets;
+}
+
+//==============================================================================
+std::vector<number_t> collect_field_samples(std::vector<Ticket> const & tickets, size_t const index)
+{
+    std::vector<number_t> field_samples{};
+    field_samples.reserve(tickets.size());
+    std::transform(std::cbegin(tickets),
+                   std::cend(tickets),
+                   std::back_inserter(field_samples),
+                   [&](Ticket const & ticket) {
+                       assert(ticket.size() > index);
+                       return ticket[index];
+                   });
+    sort(field_samples);
+    return field_samples;
+}
+
+//==============================================================================
+struct Unsolved_Field {
+    std::vector<number_t> samples;
+    std::vector<size_t> rule_index_candidates;
+};
+
+//==============================================================================
+std::vector<Unsolved_Field> construct_unsolved_fields(std::vector<Ticket> const & tickets)
+{
+    std::vector<Unsolved_Field> unsolved_fields{};
+    assert(!tickets.empty());
+    auto const number_of_fields{ tickets.front().size() };
+    assert(all_of(tickets, [&](Ticket const & ticket) { return ticket.size() == number_of_fields; }));
+    unsolved_fields.reserve(number_of_fields);
+    auto const index_list{ build_index_list(number_of_fields) };
+    for (size_t field_index{}; field_index < number_of_fields; ++field_index) {
+        unsolved_fields.emplace_back(Unsolved_Field{ collect_field_samples(tickets, field_index), index_list });
+    }
+    return unsolved_fields;
+}
+
+//==============================================================================
+size_t register_solved_rule(size_t const solved_rule_index,
+                            size_t const solved_field_index,
+                            std::vector<Unsolved_Field> & unsolved_fields)
+{
+    auto const number_of_fields{ unsolved_fields.size() };
+    size_t number_of_solved_fields{ 1 };
+    for (size_t field_index{}; field_index < number_of_fields; ++field_index) {
+        if (field_index == solved_field_index) {
+            // don't erase yourself
+            continue;
+        }
+        auto & rule_index_candidates{ unsolved_fields[field_index].rule_index_candidates };
+        if (rule_index_candidates.size() == 1) {
+            // already solved
+            continue;
+        }
+
+        auto const rule_index_to_erase{
+            std::find(std::cbegin(rule_index_candidates), std::cend(rule_index_candidates), solved_rule_index)
+        };
+
+        if (rule_index_to_erase == std::cend(rule_index_candidates)) {
+            // nothing to erase
+            continue;
+        }
+
+        rule_index_candidates.erase(rule_index_to_erase);
+
+        if (rule_index_candidates.size() == 1) {
+            number_of_solved_fields
+                += register_solved_rule(rule_index_candidates.front(), field_index, unsolved_fields);
+        }
+    }
+
+    return number_of_solved_fields;
+}
+
+//==============================================================================
+std::vector<Solved_Field> deduce(std::vector<Ticket> const & tickets, std::vector<Rule> const & rules)
+{
+    auto const valid_tickets{ remove_invalid_tickets(tickets, rules) };
+    auto unsolved_fields{ construct_unsolved_fields(valid_tickets) };
+    auto const number_of_fields{ unsolved_fields.size() };
+    assert(number_of_fields == rules.size());
+
+    size_t number_of_solved_fields{};
+
+    while (number_of_solved_fields < number_of_fields) {
+        for (size_t field_index{}; field_index < number_of_fields; ++field_index) {
+            auto & unsolved_field{ unsolved_fields[field_index] };
+
+            if (unsolved_field.rule_index_candidates.size() == 1) {
+                // already solved
+                continue;
+            }
+
+            auto const is_invalid_rule_index_candidate = [&](size_t const rule_index_candidate) {
+                auto const & candidate_rule{ rules[rule_index_candidate] };
+                return !candidate_rule.contains_all(unsolved_field.samples);
+            };
+
+            auto & rule_index_candidates{ unsolved_field.rule_index_candidates };
+            remove_if(rule_index_candidates, is_invalid_rule_index_candidate);
+            if (rule_index_candidates.size() > 1) {
+                // not solved yet
+                continue;
+            }
+            // solved
+            assert(rule_index_candidates.size() == 1);
+
+            // add to solved
+            number_of_solved_fields
+                += register_solved_rule(rule_index_candidates.front(), field_index, unsolved_fields);
+        }
+    }
+
+    // compile data
+    std::vector<Solved_Field> solved_fields{};
+    solved_fields.reserve(number_of_fields);
+
+    for (size_t field_index{}; field_index < number_of_fields; ++field_index) {
+        solved_fields.emplace_back(
+            Solved_Field{ unsolved_fields[field_index].rule_index_candidates.front(), field_index });
+    }
+
+    return solved_fields;
 }
 
 } // namespace
@@ -241,5 +429,7 @@ std::string day_16_b(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
     auto const data{ Day_16_Data::from_string(input) };
-    return "coucou";
+    auto const departure_product{ data.get_departure_product() };
+
+    return std::to_string(departure_product);
 }
