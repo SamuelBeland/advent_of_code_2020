@@ -95,6 +95,8 @@
 //
 // Once you work out which field is which, look for the six fields on your ticket that start with the word
 // departure.What do you get if you multiply those six values together ?
+//
+// Your puzzle answer was 953713095011.
 
 #include "utils.hpp"
 #include <resources.hpp>
@@ -212,6 +214,7 @@ struct Solved_Field {
     size_t field_index;
 };
 
+//==============================================================================
 std::vector<Solved_Field> deduce(std::vector<Ticket> const & tickets, std::vector<Rule> const & rules);
 
 //==============================================================================
@@ -418,8 +421,8 @@ std::vector<Solved_Field> deduce(std::vector<Ticket> const & tickets, std::vecto
 std::string day_16_a(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
-    auto const info{ Day_16_Data::from_string(input) };
-    auto const error_rate{ get_ticket_scanning_error_rate(info.nearby_tickets, info.rules) };
+    auto const data{ Day_16_Data::from_string(input) };
+    auto const error_rate{ get_ticket_scanning_error_rate(data.nearby_tickets, data.rules) };
 
     return std::to_string(error_rate);
 }

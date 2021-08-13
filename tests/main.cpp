@@ -235,18 +235,11 @@ TEST_CASE("day_16_a")
     REQUIRE(day_16_a(inputs::DAY_16) == "19060");
 }
 
-#include <charconv>
-
 TEST_CASE("day_16_b")
 {
     REQUIRE(day_16_b(inputs::TEST_16_B_1) == "132");
     REQUIRE(day_16_b(inputs::TEST_16_B_2) == "110");
-    auto const answer{ day_16_b(inputs::DAY_16) };
-    size_t num_answer;
-    std::from_chars(answer.c_str(), answer.c_str() + answer.size(), num_answer);
-    REQUIRE(num_answer > 559184497);
-    REQUIRE(num_answer > 391401208433);
-    REQUIRE(num_answer < 6042109687403);
+    REQUIRE(day_16_b(inputs::DAY_16) == "953713095011");
 }
 
 //==============================================================================
