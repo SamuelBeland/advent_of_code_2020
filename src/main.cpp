@@ -10,10 +10,10 @@ int main(int argc, char const ** argv)
 
     // for now, lets just print all functions
     for (auto const & day : DAYS) {
-        if (&day == DAYS_TO_SKIP) {
-            std::cout << "Skipping day " << day.name << "...\n\n";
-            continue;
-        }
+        // if (&day == DAYS_TO_SKIP) {
+        //    std::cout << "Skipping day " << day.name << "...\n\n";
+        //    continue;
+        //}
 
         std::cout << day.name << ":\n\t" << day.function() << "\n\n";
     }

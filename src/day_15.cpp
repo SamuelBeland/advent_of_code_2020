@@ -66,34 +66,33 @@
 
 namespace
 {
-using number_t = unsigned;
+using number_t = uint32_t;
 
 //==============================================================================
-std::string day_15(char const * input_file_path, number_t const last_turn)
+std::string day_15(char const * input_file_path, size_t const how_many_turn_to_play)
 {
     auto const input{ read_file(input_file_path) };
     auto const starting_numbers{ scan_number_list<number_t>(input, ',') };
 
-    std::unordered_map<number_t, number_t> numbers{};
-    numbers.reserve(last_turn / 2); // lets just reserve a metric ton of memory
-    int current_turn{ 1 };
+    std::vector<number_t> numbers{};
+    numbers.resize(how_many_turn_to_play);
+    number_t current_turn{ 1 };
     auto last_number{ starting_numbers.front() };
     for (auto it{ starting_numbers.cbegin() + 1 }; it != starting_numbers.cend(); ++it) {
         numbers[last_number] = current_turn++;
         last_number = *it;
     }
 
-    for (; current_turn < last_turn; ++current_turn) {
-        auto const find_result{ numbers.find(last_number) };
-        if (find_result != numbers.cend()) {
-            // number was found
-            last_number = current_turn - find_result->second;
-            find_result->second = current_turn;
-        } else {
-            // number was not found
-            numbers.emplace(last_number, current_turn);
+    for (; current_turn < how_many_turn_to_play; ++current_turn) {
+        auto & mentioned_at_turn{ numbers[last_number] };
+        if (mentioned_at_turn == 0) {
+            // number was never mentioned
             last_number = 0;
+        } else {
+            // number was already mentioned
+            last_number = current_turn - mentioned_at_turn;
         }
+        mentioned_at_turn = current_turn;
     }
 
     return std::to_string(last_number);
@@ -104,13 +103,13 @@ std::string day_15(char const * input_file_path, number_t const last_turn)
 //==============================================================================
 std::string day_15_a(char const * input_file_path)
 {
-    static number_t constexpr LAST_TURN = 2020;
-    return day_15(input_file_path, LAST_TURN);
+    static number_t constexpr HOW_MANY_TURNS_TO_PLAY = 2020;
+    return day_15(input_file_path, HOW_MANY_TURNS_TO_PLAY);
 }
 
 //==============================================================================
 std::string day_15_b(char const * input_file_path)
 {
-    static number_t constexpr LAST_TURN = 30000000;
-    return day_15(input_file_path, LAST_TURN);
+    static number_t constexpr HOW_MANY_TURNS_TO_PLAY = 30000000;
+    return day_15(input_file_path, HOW_MANY_TURNS_TO_PLAY);
 }
