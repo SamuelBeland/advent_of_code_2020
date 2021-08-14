@@ -18,7 +18,9 @@ constexpr size_t NUM_PERMUTATIONS = 3 * 3 * 3 - 1;
 using cube_t = unsigned;
 
 //==============================================================================
-using Space = std::array<cube_t, SPACE_SIZE>;
+struct Space {
+    std::array<cube_t, SPACE_SIZE> data;
+};
 
 //==============================================================================
 constexpr cube_t INACTIVE = 0;
@@ -55,7 +57,7 @@ std::unique_ptr<Space> parse_space(std::string_view const & input)
     auto space{ std::make_unique<Space>() };
 
     auto const offset{ MAX_WIDTH / 2 * SLICE_SIZE };
-    std::copy_n(std::cbegin(*slice), SLICE_SIZE, std::begin(*space) + offset);
+    std::copy_n(std::cbegin(*slice), SLICE_SIZE, std::begin(space->data) + offset);
 
     return space;
 }
@@ -105,7 +107,7 @@ void tick(Space & space)
     static constexpr auto AMOUNT_TO_COPY{ (MAX_WIDTH - 2) * (MAX_WIDTH - 2) * (MAX_WIDTH - 2) };
     static constexpr auto PERMUTATION_OFFSETS{ get_all_permutation_offsets() };
 
-    auto const data_to_copy{ space.cbegin() + COPY_OFFSET };
+    auto const data_to_copy{ space.data.cbegin() + COPY_OFFSET };
     auto const data_to_copy_end{ data_to_copy + AMOUNT_TO_COPY };
     auto const sum_matrix{ std::make_unique<Space>() };
 
@@ -113,13 +115,17 @@ void tick(Space & space)
     for (auto const & offset : PERMUTATION_OFFSETS) {
         std::transform(data_to_copy,
                        data_to_copy_end,
-                       std::cbegin(*sum_matrix) + offset,
-                       std::begin(*sum_matrix) + offset,
+                       std::cbegin(sum_matrix->data) + offset,
+                       std::begin(sum_matrix->data) + offset,
                        std::plus());
     }
 
     // compute state
-    std::transform(std::cbegin(space), std::cend(space), std::cbegin(*sum_matrix), std::begin(space), compute_state);
+    std::transform(std::cbegin(space.data),
+                   std::cend(space.data),
+                   std::cbegin(sum_matrix->data),
+                   std::begin(space.data),
+                   compute_state);
 }
 
 //==============================================================================
@@ -137,9 +143,9 @@ void tick(Space & space, size_t num_iterations)
 std::string day_17_a(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
-    auto space{ parse_space(input) };
+    auto const space{ parse_space(input) };
     tick(*space, 6);
-    auto const num_active_cubes{ count(*space, ACTIVE) };
+    auto const num_active_cubes{ count(space->data, ACTIVE) };
 
     return std::to_string(num_active_cubes);
 }
