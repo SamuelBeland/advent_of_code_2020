@@ -171,7 +171,7 @@ Memory parse_memory(std::string_view const & input)
     auto const lines{ split(input) };
     Memory memory{};
     memory.resize(lines.size());
-    transform(lines, memory, Instruction::from_string);
+    aoc::transform(lines, memory, Instruction::from_string);
     return memory;
 }
 

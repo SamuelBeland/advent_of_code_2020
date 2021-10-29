@@ -218,7 +218,7 @@ std::string day_12_a(char const * input_file_path)
 
     std::vector<Step> steps{};
     steps.resize(lines.size());
-    transform(lines, steps, parse_step);
+    aoc::transform(lines, steps, parse_step);
 
     Position position{ 0, 0, Direction::east };
     for (auto const & step : steps) {

@@ -146,7 +146,7 @@ number_t find_intruder(std::vector<number_t> const & numbers, size_t const pream
     for (auto number_it{ preamble_end }; number_it != numbers.cend(); ++preamble_begin, ++preamble_end, ++number_it) {
         preamble.clear();
         preamble.assign(preamble_begin, preamble_end);
-        sort(preamble);
+        aoc::sort(preamble);
 
         if (!is_sum_of_two_numbers_in_preamble(*number_it, preamble.cbegin(), preamble.cend())) {
             return *number_it;

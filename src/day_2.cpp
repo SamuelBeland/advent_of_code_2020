@@ -87,7 +87,7 @@ std::string day_2(char const * input_file_path, Pred && predicate)
     auto const input{ read_file(input_file_path) };
     auto const lines{ split(input) };
     auto const entries{ lines | views::transform(Entry::from_string) };
-    auto const count{ count_if(entries, predicate) };
+    auto const count{ aoc::count_if(entries, predicate) };
 
     return std::to_string(count);
 }
@@ -98,7 +98,7 @@ std::string day_2(char const * input_file_path, Pred && predicate)
 std::string day_2_a(char const * input_file_path)
 {
     return day_2(input_file_path, [](Entry const & entry) {
-        auto const char_count{ count(entry.password, entry.password_policy.character) };
+        auto const char_count{ aoc::count(entry.password, entry.password_policy.character) };
         auto const & min{ entry.password_policy.param_1 };
         auto const & max{ entry.password_policy.param_2 };
 

@@ -49,7 +49,7 @@ static constexpr auto TARGET_VALUE = 2020;
 std::string day_1_a(const char * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
-    auto const numbers{ sort(scan_number_list<int>(input, '\n')) };
+    auto const numbers{ aoc::sort(scan_number_list<int>(input, '\n')) };
 
     auto small{ numbers.cbegin() };
     auto big{ numbers.cend() - 1 };
@@ -73,7 +73,7 @@ std::string day_1_a(const char * input_file_path)
 std::string day_1_b(const char * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
-    auto const numbers{ sort(scan_number_list<int>(input, "\n")) };
+    auto const numbers{ aoc::sort(scan_number_list<int>(input, "\n")) };
 
     auto small{ numbers.cbegin() };
     auto middle{ numbers.cbegin() + 1 };

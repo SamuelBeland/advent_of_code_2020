@@ -143,7 +143,7 @@ public:
 
         std::vector<Rule> rules{};
         rules.resize(lines.size());
-        transform(lines, rules, Rule::from_string);
+        aoc::transform(lines, rules, Rule::from_string);
 
         for (auto const & rule : rules) {
             add_rule(rule);

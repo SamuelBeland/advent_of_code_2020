@@ -87,7 +87,7 @@ constexpr cube_t compute_state(cube_t const & initial_state, cube_t const & numb
 struct Space {
     std::array<cube_t, SPACE_SIZE> data;
     //==============================================================================
-    [[nodiscard]] size_t num_active_cubes() const { return count(data, ACTIVE); }
+    [[nodiscard]] size_t num_active_cubes() const { return aoc::count(data, ACTIVE); }
     void tick(size_t num_ticks);
     //==============================================================================
     static std::unique_ptr<Space> from_string(std::string_view const & input);
@@ -112,7 +112,7 @@ std::unique_ptr<Space> Space::from_string(std::string_view const & input)
     auto const lines{ split(input) };
     assert(!lines.empty());
     auto const width{ lines.front().size() };
-    assert(all_of(lines, [&](std::string_view const & line) { return line.size() == width; }));
+    assert(aoc::all_of(lines, [&](std::string_view const & line) { return line.size() == width; }));
 
     // We only start with a single slice to parse. The parsed slice is going to be much smaller than the allocated
     // slice, so we should make sure to place it right in the center of our normal (bigger) slice.
@@ -123,7 +123,7 @@ std::unique_ptr<Space> Space::from_string(std::string_view const & input)
     for (size_t line_index{}; line_index < lines.size(); ++line_index) {
         auto const offset{ base_offset + line_index * MAX_WIDTH };
         auto const & line{ lines[line_index] };
-        std::transform(std::cbegin(line), std::cend(line), slice->data() + offset, parse_state);
+        std::transform(line.cbegin(), line.cend(), slice->data() + offset, parse_state);
     }
 
     auto space{ std::make_unique<Space>() };

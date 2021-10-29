@@ -238,7 +238,7 @@ constexpr std::array<Constraint, 7> CONSTRAINTS{ Constraint{ "byr:", is_byr_vali
 //==============================================================================
 bool has_all_mandatory_fields(std::string_view const & entry)
 {
-    return all_of(CONSTRAINTS, [&entry](Constraint const & constraint) -> bool {
+    return aoc::all_of(CONSTRAINTS, [&entry](Constraint const & constraint) -> bool {
         return entry.find(constraint.id) != std::string::npos;
     });
 }
@@ -269,8 +269,8 @@ std::string day_4_a(char const * input_file_path)
     auto const input{ read_file(input_file_path) };
     auto const entries{ split(input, "\n\n") };
 
-    auto const valid_count{ count_if(entries, [](std::string_view const & entry) -> bool {
-        return all_of(CONSTRAINTS, [&entry](Constraint const & constraint) -> bool {
+    auto const valid_count{ aoc::count_if(entries, [](std::string_view const & entry) -> bool {
+        return aoc::all_of(CONSTRAINTS, [&entry](Constraint const & constraint) -> bool {
             return entry.find(constraint.id) != std::string::npos;
         });
     }) };
@@ -282,8 +282,8 @@ std::string day_4_b(char const * input_file_path)
 {
     auto const input{ read_file(input_file_path) };
     auto const entries{ split(input, "\n\n") };
-    auto const valid_count{ count_if(entries, [](std::string_view const & entry) -> bool {
-        return all_of(CONSTRAINTS, [&entry](Constraint const & constraint) -> bool {
+    auto const valid_count{ aoc::count_if(entries, [](std::string_view const & entry) -> bool {
+        return aoc::all_of(CONSTRAINTS, [&entry](Constraint const & constraint) -> bool {
             return satisfies_constraint(entry, constraint);
         });
     }) };

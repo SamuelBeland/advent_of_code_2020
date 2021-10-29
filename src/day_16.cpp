@@ -137,7 +137,7 @@ struct Rule {
             return false;
         }
 
-        auto const end_of_low_range{ upper_bound(values, low_range.max) };
+        auto const end_of_low_range{ aoc::upper_bound(values, low_range.max) };
         auto const start_of_high_range{ std::lower_bound(end_of_low_range, values.cend(), high_range.min) };
 
         // no values between low_range.max and high_range.min
@@ -165,7 +165,7 @@ struct Rule {
     auto const lines{ split(string) };
     std::vector<Rule> result{};
     result.resize(lines.size());
-    transform(lines, result, Rule::from_string);
+    aoc::transform(lines, result, Rule::from_string);
 
     return result;
 }
@@ -178,7 +178,7 @@ std::vector<Ticket> parse_tickets(std::string_view const string)
 {
     auto const lines{ split(string) };
     std::vector<Ticket> result{ lines.size() };
-    transform(lines, result, [](std::string_view const & line) { return scan_number_list<number_t>(line, ','); });
+    aoc::transform(lines, result, [](std::string_view const & line) { return scan_number_list<number_t>(line, ','); });
     return result;
 }
 
@@ -186,7 +186,7 @@ std::vector<Ticket> parse_tickets(std::string_view const string)
 number_t get_ticket_scanning_error_rate(std::vector<Ticket> const & tickets, std::vector<Rule> const & rules)
 {
     auto const is_invalid_entry = [&](number_t const & value) {
-        return all_of(rules, [&](Rule const & rule) { return !rule.contains(value); });
+        return aoc::all_of(rules, [&](Rule const & rule) { return !rule.contains(value); });
     };
 
     std::vector<number_t> invalid_entries{};
@@ -196,7 +196,7 @@ number_t get_ticket_scanning_error_rate(std::vector<Ticket> const & tickets, std
         std::copy_if(ticket.cbegin(), ticket.cend(), std::back_inserter(invalid_entries), is_invalid_entry);
     }
 
-    return reduce(invalid_entries, number_t{}, std::plus());
+    return aoc::reduce(invalid_entries, number_t{}, std::plus());
 }
 
 //==============================================================================
@@ -229,14 +229,14 @@ struct Day_16_Data {
         auto const solution{ deduce(nearby_tickets, rules) };
 
         auto const get_field_index_from_rule_index = [&](size_t const rule_index) {
-            auto const solved_field_it{ find_if(solution, [&](Solved_Field const & solved_field) {
+            auto const solved_field_it{ aoc::find_if(solution, [&](Solved_Field const & solved_field) {
                 return solved_field.rule_index == rule_index;
             }) };
             assert(solved_field_it != std::cend(solution));
             return solved_field_it->field_index;
         };
 
-        auto const result{ transform_reduce(
+        auto const result{ aoc::transform_reduce(
             departure_rule_indexes,
             number_t{ 1 },
             [&](size_t const departure_rule) {
@@ -251,7 +251,8 @@ struct Day_16_Data {
     [[nodiscard]] std::vector<size_t> get_departure_rule_indexes() const
     {
         auto departure_rule_indexes{ build_index_list(rules.size()) };
-        remove_if(departure_rule_indexes, [&](size_t const rule_index) { return !rules[rule_index].is_departure(); });
+        aoc::remove_if(departure_rule_indexes,
+                       [&](size_t const rule_index) { return !rules[rule_index].is_departure(); });
         return departure_rule_indexes;
     }
     //==============================================================================
@@ -277,10 +278,10 @@ std::vector<Ticket> remove_invalid_tickets(std::vector<Ticket> const & tickets, 
 {
     auto const is_valid_ticket = [&](Ticket const & ticket) {
         auto const is_valid_field = [&](number_t const & number) {
-            return any_of(rules, [&](Rule const & rule) { return rule.contains(number); });
+            return aoc::any_of(rules, [&](Rule const & rule) { return rule.contains(number); });
         };
 
-        return all_of(ticket, is_valid_field);
+        return aoc::all_of(ticket, is_valid_field);
     };
 
     std::vector<Ticket> valid_tickets{};
@@ -301,7 +302,7 @@ std::vector<number_t> collect_field_samples(std::vector<Ticket> const & tickets,
                        assert(ticket.size() > index);
                        return ticket[index];
                    });
-    sort(field_samples);
+    aoc::sort(field_samples);
     return field_samples;
 }
 
@@ -317,7 +318,7 @@ std::vector<Unsolved_Field> construct_unsolved_fields(std::vector<Ticket> const 
     std::vector<Unsolved_Field> unsolved_fields{};
     assert(!tickets.empty());
     auto const number_of_fields{ tickets.front().size() };
-    assert(all_of(tickets, [&](Ticket const & ticket) { return ticket.size() == number_of_fields; }));
+    assert(aoc::all_of(tickets, [&](Ticket const & ticket) { return ticket.size() == number_of_fields; }));
     unsolved_fields.reserve(number_of_fields);
     auto const index_list{ build_index_list(number_of_fields) };
     for (size_t field_index{}; field_index < number_of_fields; ++field_index) {
@@ -389,7 +390,7 @@ std::vector<Solved_Field> deduce(std::vector<Ticket> const & tickets, std::vecto
             };
 
             auto & rule_index_candidates{ unsolved_field.rule_index_candidates };
-            remove_if(rule_index_candidates, is_invalid_rule_index_candidate);
+            aoc::remove_if(rule_index_candidates, is_invalid_rule_index_candidate);
             if (rule_index_candidates.size() > 1) {
                 // not solved yet
                 continue;

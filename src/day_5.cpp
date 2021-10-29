@@ -71,7 +71,7 @@ seat_id_t get_id(std::string_view const & seat)
     assert(seat.size() == 10);
 
     seat_id_t result{};
-    for_each(seat, [&result](char const character) {
+    aoc::for_each(seat, [&result](char const character) {
         result <<= 1;
         if (character == 'B' || character == 'R') {
             ++result;
@@ -89,7 +89,7 @@ std::string day_5_a(char const * input_file_path)
     auto const input{ read_file(input_file_path) };
     auto const lines{ split(input) };
     auto const ids = lines | views::transform(get_id);
-    auto const max_id{ *max_element(ids) };
+    auto const max_id{ *aoc::max_element(ids) };
 
     return std::to_string(max_id);
 }
@@ -102,8 +102,8 @@ std::string day_5_b(char const * input_file_path)
 
     std::vector<seat_id_t> ids{};
     ids.resize(lines.size());
-    transform(lines, ids, get_id);
-    sort(ids);
+    aoc::transform(lines, ids, get_id);
+    aoc::sort(ids);
 
     // TODO : adjacent something
     auto it{ ids.cbegin() + 1 };
