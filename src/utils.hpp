@@ -205,8 +205,8 @@ void scan_number_list(std::string_view const & string, T & collection, U const &
 }
 
 //==============================================================================
-template<typename T>
-[[nodiscard]] std::vector<T> scan_number_list(std::string_view const & string, std::string_view const & separator)
+template<typename T, typename U>
+[[nodiscard]] std::vector<T> scan_number_list(std::string_view const & string, U const & separator)
 {
     std::vector<T> result{};
     scan_number_list(string, result, separator);
@@ -214,11 +214,11 @@ template<typename T>
 }
 
 //==============================================================================
-template<typename T>
-[[nodiscard]] std::vector<T> scan_number_list(std::string_view const & string, char const separator)
+template<typename T, typename U>
+[[nodiscard]] std::vector<T> scan_and_sort_number_list(std::string_view const & string, U const & separator)
 {
-    std::vector<T> result{};
-    scan_number_list(string, result, separator);
+    auto result{ scan_number_list<T>(string, separator) };
+    aoc::sort(result);
     return result;
 }
 

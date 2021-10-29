@@ -58,14 +58,6 @@ void sort(Coll & coll)
     std::sort(coll.begin(), coll.end());
 }
 
-template<typename Coll>
-Coll sort(Coll && coll)
-{
-    auto moved{ std::move(coll) };
-    std::sort(moved.begin(), moved.end());
-    return moved;
-}
-
 template<typename Coll, typename T>
 [[nodiscard]] auto count(Coll const & coll, T const & value)
 {
