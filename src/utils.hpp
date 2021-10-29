@@ -38,17 +38,19 @@ To narrow(From const & from) noexcept(!IS_DEBUG)
 
 //==============================================================================
 template<typename T>
-void copy_or_parse(std::string_view const & string, T & out_param)
+T copy_or_parse(std::string_view const & string)
 {
+    T value;
     if constexpr (std::is_same_v<std::string_view, T> || std::is_same_v<std::string, T>) {
-        out_param = string;
+        value = string;
     } else if constexpr (std::is_same_v<char, T>) {
         assert(string.size() == 1);
-        out_param = string.front();
+        value = string.front();
     } else {
-        [[maybe_unused]] auto const error{ std::from_chars(string.data(), string.data() + string.size(), out_param) };
+        [[maybe_unused]] auto const error{ std::from_chars(string.data(), string.data() + string.size(), value) };
         assert(error.ec == std::errc());
     }
+    return value;
 }
 
 //==============================================================================
@@ -193,7 +195,7 @@ void scan(std::string_view const & string, std::string_view const & format, T & 
     auto const value_length{ narrow<size_t>(value_end - value_begin) };
     std::string_view const value{ value_begin, value_length };
 
-    copy_or_parse(value, out_param);
+    out_param = copy_or_parse<T>(value);
 
     std::string_view const new_string{ value_end + suffix_length,
                                        string.size() - prefix_length - value_length - suffix_length };
@@ -206,9 +208,7 @@ template<typename T, typename U>
 void scan_number_list(std::string_view const & string, T & collection, U const & separator)
 {
     auto const add_element = [&](std::string_view const & element) {
-        typename T::value_type item;
-        copy_or_parse(element, item);
-        collection.push_back(item);
+        collection.push_back(copy_or_parse<typename T::value_type>(element));
     };
 
     for_each_element_in_string(string, add_element, separator);
