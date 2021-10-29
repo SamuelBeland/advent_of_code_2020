@@ -98,15 +98,8 @@ template<typename T, typename Coll>
 std::vector<T> parse_number_list(Coll const & collection)
 {
     std::vector<T> result{};
-    result.reserve(collection.size());
-
-    for (auto const & word : collection) {
-        T value;
-        [[maybe_unused]] auto const error{ std::from_chars(word.data(), word.data() + word.size(), value) };
-        assert(error.ec == std::errc());
-        result.push_back(value);
-    }
-
+    result.resize(collection.size());
+    aoc::transform(collection, result, copy_or_parse<T>);
     return result;
 }
 
@@ -115,16 +108,8 @@ template<typename T, typename It>
 std::vector<T> parse_number_list(It begin, It const end)
 {
     std::vector<T> result{};
-    result.reserve(narrow<size_t>(end - begin));
-
-    while (begin != end) {
-        T value;
-        [[maybe_unused]] auto const error{ std::from_chars(begin->data(), begin->data() + begin->size(), value) };
-        assert(error.ec == std::errc());
-        result.push_back(value);
-        ++begin;
-    }
-
+    result.resize(narrow<size_t>(std::distance(begin, end)));
+    std::transform(begin, end, result.begin(), copy_or_parse<T>);
     return result;
 }
 
