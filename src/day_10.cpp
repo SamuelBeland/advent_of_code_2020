@@ -166,9 +166,7 @@ auto get_day_10_numbers(char const * const input_file_path)
     static constexpr number_t BUILTIN_ADAPTER_RATING_DIFFERENCE = 3;
 
     auto const input{ aoc::read_file(input_file_path) };
-    auto const lines{ aoc::split(input) };
-    auto numbers{ aoc::parse_number_list<number_t>(lines) };
-    aoc::sort(numbers);
+    auto numbers{ aoc::scan_and_sort_number_list<number_t>(input, '\n') };
     numbers.insert(numbers.begin(), 0);
     numbers.push_back(numbers.back() + BUILTIN_ADAPTER_RATING_DIFFERENCE);
     return numbers;

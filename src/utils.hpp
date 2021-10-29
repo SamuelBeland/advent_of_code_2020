@@ -100,16 +100,6 @@ void for_each_element_in_string(std::string_view const & string, Func const & fu
 }
 
 //==============================================================================
-template<typename T, typename Coll>
-std::vector<T> parse_number_list(Coll const & collection)
-{
-    std::vector<T> result{};
-    result.resize(collection.size());
-    aoc::transform(collection, result, detail::copy_or_parse<T>);
-    return result;
-}
-
-//==============================================================================
 template<typename T, typename It>
 std::vector<T> parse_number_list(It begin, It const end)
 {
