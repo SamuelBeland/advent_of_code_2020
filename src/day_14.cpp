@@ -216,14 +216,14 @@ struct Init_Section {
 //==============================================================================
 std::vector<Init_Section> parse_init_sequence(std::string const & input)
 {
-    auto const lines{ split(input) };
+    auto const lines{ aoc::split(input) };
     std::vector<Init_Section> result;
 
     for (auto const & line : lines) {
         if (line[1] == 'a') {
             // first word is "mask" : mask definition line
             std::string_view mask;
-            scan(line, "mask = {}", mask);
+            aoc::scan(line, "mask = {}", mask);
             Init_Section new_init_section;
             new_init_section.mask = Mask::from_string(mask);
             result.push_back(new_init_section);
@@ -232,7 +232,7 @@ std::vector<Init_Section> parse_init_sequence(std::string const & input)
             assert(line[1] == 'e');
             uint64_t address;
             uint64_t value;
-            scan(line, "mem[{}] = {}", address, value);
+            aoc::scan(line, "mem[{}] = {}", address, value);
             result.back().operations.push_back(Operation{ address, value });
         }
     }
@@ -245,7 +245,7 @@ std::vector<Init_Section> parse_init_sequence(std::string const & input)
 //==============================================================================
 std::string day_14_a(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
+    auto const input{ aoc::read_file(input_file_path) };
     auto const init_sequence{ parse_init_sequence(input) };
 
     Memory memory{};
@@ -264,7 +264,7 @@ std::string day_14_a(char const * input_file_path)
 //==============================================================================
 std::string day_14_b(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
+    auto const input{ aoc::read_file(input_file_path) };
     auto const init_sequence{ parse_init_sequence(input) };
 
     Memory memory{};

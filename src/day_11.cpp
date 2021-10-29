@@ -242,7 +242,7 @@ public:
     //==============================================================================
     Ferry(std::string const & input)
     {
-        auto const lines{ split(input) };
+        auto const lines{ aoc::split(input) };
 
         m_width = lines.front().size();
         m_height = lines.size();
@@ -340,8 +340,8 @@ private:
     {
         size_t count{};
 
-        auto const origin_x{ narrow<int>(index % m_width) };
-        auto const origin_y{ narrow<int>(index / m_width) };
+        auto const origin_x{ aoc::narrow<int>(index % m_width) };
+        auto const origin_y{ aoc::narrow<int>(index / m_width) };
 
         for (auto y_direction{ -1 }; y_direction <= 1; ++y_direction) {
             for (auto x_direction{ -1 }; x_direction <= 1; ++x_direction) {
@@ -388,7 +388,7 @@ private:
 //==============================================================================
 std::string day_11_a(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
+    auto const input{ aoc::read_file(input_file_path) };
 
     Ferry ferry{ input };
     auto const number_of_occupied_seats{ ferry.run_neighbors() };
@@ -399,7 +399,7 @@ std::string day_11_a(char const * input_file_path)
 //==============================================================================
 std::string day_11_b(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
+    auto const input{ aoc::read_file(input_file_path) };
 
     Ferry ferry{ input };
     auto const number_of_occupied_seats{ ferry.run_line_of_sight() };

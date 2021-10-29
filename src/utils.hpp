@@ -8,32 +8,15 @@
 #include <string_view>
 #include <vector>
 
-//==============================================================================
-std::string read_file(char const * path);
-
-//==============================================================================
-std::vector<std::string_view> split(std::string_view const & string, char separator = '\n');
-std::vector<std::string_view> split(std::string_view const & string, std::string_view const & separator);
-
+namespace aoc
+{
+namespace detail
+{
 #if defined(NDEBUG)
 static constexpr auto IS_DEBUG = false;
 #else
 static constexpr auto IS_DEBUG = true;
 #endif
-
-//==============================================================================
-template<typename To, typename From>
-To narrow(From const & from) noexcept(!IS_DEBUG)
-{
-    if constexpr (IS_DEBUG) {
-        assert(std::is_signed_v<To> || from >= 0);
-        To const newValue{ static_cast<To>(from) };
-        assert(static_cast<From>(newValue) == from);
-        return newValue;
-    } else {
-        return static_cast<To>(from);
-    }
-}
 
 //==============================================================================
 template<typename T>
@@ -50,6 +33,29 @@ T copy_or_parse(std::string_view const & string)
         assert(error.ec == std::errc());
     }
     return value;
+}
+
+} // namespace detail
+
+//==============================================================================
+std::string read_file(char const * path);
+
+//==============================================================================
+std::vector<std::string_view> split(std::string_view const & string, char separator = '\n');
+std::vector<std::string_view> split(std::string_view const & string, std::string_view const & separator);
+
+//==============================================================================
+template<typename To, typename From>
+To narrow(From const & from) noexcept(!detail::IS_DEBUG)
+{
+    if constexpr (detail::IS_DEBUG) {
+        assert(std::is_signed_v<To> || from >= 0);
+        To const newValue{ static_cast<To>(from) };
+        assert(static_cast<From>(newValue) == from);
+        return newValue;
+    } else {
+        return static_cast<To>(from);
+    }
 }
 
 //==============================================================================
@@ -99,7 +105,7 @@ std::vector<T> parse_number_list(Coll const & collection)
 {
     std::vector<T> result{};
     result.resize(collection.size());
-    aoc::transform(collection, result, copy_or_parse<T>);
+    aoc::transform(collection, result, detail::copy_or_parse<T>);
     return result;
 }
 
@@ -109,7 +115,7 @@ std::vector<T> parse_number_list(It begin, It const end)
 {
     std::vector<T> result{};
     result.resize(narrow<size_t>(std::distance(begin, end)));
-    std::transform(begin, end, result.begin(), copy_or_parse<T>);
+    std::transform(begin, end, result.begin(), detail::copy_or_parse<T>);
     return result;
 }
 
@@ -179,7 +185,7 @@ void scan(std::string_view const & string, std::string_view const & format, T & 
     auto const value_length{ narrow<size_t>(value_end - value_begin) };
     std::string_view const value{ value_begin, value_length };
 
-    out_param = copy_or_parse<T>(value);
+    out_param = detail::copy_or_parse<T>(value);
 
     std::string_view const new_string{ value_end + suffix_length,
                                        string.size() - prefix_length - value_length - suffix_length };
@@ -192,7 +198,7 @@ template<typename T, typename U>
 void scan_number_list(std::string_view const & string, T & collection, U const & separator)
 {
     auto const add_element = [&](std::string_view const & element) {
-        collection.push_back(copy_or_parse<typename T::value_type>(element));
+        collection.push_back(detail::copy_or_parse<typename T::value_type>(element));
     };
 
     for_each_element_in_string(string, add_element, separator);
@@ -215,3 +221,5 @@ template<typename T>
     scan_number_list(string, result, separator);
     return result;
 }
+
+} // namespace aoc

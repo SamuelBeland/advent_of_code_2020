@@ -69,8 +69,8 @@ using number_t = uint32_t;
 //==============================================================================
 std::string day_15(char const * input_file_path, size_t const how_many_turn_to_play)
 {
-    auto const input{ read_file(input_file_path) };
-    auto const starting_numbers{ scan_number_list<number_t>(input, ',') };
+    auto const input{ aoc::read_file(input_file_path) };
+    auto const starting_numbers{ aoc::scan_number_list<number_t>(input, ',') };
 
     std::vector<number_t> numbers{};
     numbers.resize(how_many_turn_to_play);

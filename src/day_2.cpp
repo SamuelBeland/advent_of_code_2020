@@ -69,12 +69,12 @@ struct Entry {
     static Entry from_string(std::string_view const & string)
     {
         Entry entry;
-        scan(string,
-             "{}-{} {}: {}",
-             entry.password_policy.param_1,
-             entry.password_policy.param_2,
-             entry.password_policy.character,
-             entry.password);
+        aoc::scan(string,
+                  "{}-{} {}: {}",
+                  entry.password_policy.param_1,
+                  entry.password_policy.param_2,
+                  entry.password_policy.character,
+                  entry.password);
 
         return entry;
     }
@@ -84,8 +84,8 @@ struct Entry {
 template<typename Pred>
 std::string day_2(char const * input_file_path, Pred && predicate)
 {
-    auto const input{ read_file(input_file_path) };
-    auto const lines{ split(input) };
+    auto const input{ aoc::read_file(input_file_path) };
+    auto const lines{ aoc::split(input) };
     auto const entries{ lines | views::transform(Entry::from_string) };
     auto const count{ aoc::count_if(entries, predicate) };
 
@@ -113,11 +113,11 @@ std::string day_2_b(char const * input_file_path)
         auto const & character{ entry.password_policy.character };
         auto const & index_1{ entry.password_policy.param_1 };
         auto const & index_2{ entry.password_policy.param_2 };
-        assert(index_1 > 0 && narrow<size_t>(index_1) <= entry.password.size());
-        assert(index_2 > 0 && narrow<size_t>(index_2) <= entry.password.size());
+        assert(index_1 > 0 && aoc::narrow<size_t>(index_1) <= entry.password.size());
+        assert(index_2 > 0 && aoc::narrow<size_t>(index_2) <= entry.password.size());
 
-        auto const index_1_matches{ entry.password[narrow<size_t>(index_1) - 1] == character };
-        auto const index_2_matches{ entry.password[narrow<size_t>(index_2) - 1] == character };
+        auto const index_1_matches{ entry.password[aoc::narrow<size_t>(index_1) - 1] == character };
+        auto const index_2_matches{ entry.password[aoc::narrow<size_t>(index_2) - 1] == character };
         return index_1_matches != index_2_matches;
     });
 }

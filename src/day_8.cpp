@@ -156,7 +156,7 @@ struct Instruction {
     {
         std::string_view operation_string;
         std::string_view argument_string;
-        scan(line, "{} {}", operation_string, argument_string);
+        aoc::scan(line, "{} {}", operation_string, argument_string);
         Instruction const result{ parse_operation(operation_string), parse_argument(argument_string) };
         return result;
     }
@@ -168,7 +168,7 @@ using Memory = std::vector<Instruction>;
 //==============================================================================
 Memory parse_memory(std::string_view const & input)
 {
-    auto const lines{ split(input) };
+    auto const lines{ aoc::split(input) };
     Memory memory{};
     memory.resize(lines.size());
     aoc::transform(lines, memory, Instruction::from_string);
@@ -258,7 +258,7 @@ private:
 //==============================================================================
 std::string day_8_a(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
+    auto const input{ aoc::read_file(input_file_path) };
     Console console{ parse_memory(input) };
     console.debug();
     auto const accumulator_value{ console.get_accumulator_value() };
@@ -268,7 +268,7 @@ std::string day_8_a(char const * input_file_path)
 //==============================================================================
 std::string day_8_b(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
+    auto const input{ aoc::read_file(input_file_path) };
     Console console{ parse_memory(input) };
     console.fix_corrupted_instruction();
     auto const result{ console.get_accumulator_value() };

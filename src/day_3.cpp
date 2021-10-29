@@ -115,8 +115,8 @@ public:
     //==============================================================================
     explicit Forest(char const * input_file_path)
     {
-        auto const input{ read_file(input_file_path) };
-        auto const lines{ split(input) };
+        auto const input{ aoc::read_file(input_file_path) };
+        auto const lines{ aoc::split(input) };
 
         m_height = lines.size();
         m_width = lines.front().size();

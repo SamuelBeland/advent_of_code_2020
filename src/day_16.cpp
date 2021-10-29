@@ -148,13 +148,13 @@ struct Rule {
     [[nodiscard]] static Rule from_string(std::string_view const & line)
     {
         Rule result{};
-        scan(line,
-             "{}: {}-{} or {}-{}",
-             result.name,
-             result.low_range.min,
-             result.low_range.max,
-             result.high_range.min,
-             result.high_range.max);
+        aoc::scan(line,
+                  "{}: {}-{} or {}-{}",
+                  result.name,
+                  result.low_range.min,
+                  result.low_range.max,
+                  result.high_range.min,
+                  result.high_range.max);
         return result;
     }
 };
@@ -162,7 +162,7 @@ struct Rule {
 //==============================================================================
 [[nodiscard]] std::vector<Rule> parse_rules(std::string_view const & string)
 {
-    auto const lines{ split(string) };
+    auto const lines{ aoc::split(string) };
     std::vector<Rule> result{};
     result.resize(lines.size());
     aoc::transform(lines, result, Rule::from_string);
@@ -176,9 +176,11 @@ using Ticket = std::vector<number_t>;
 //==============================================================================
 std::vector<Ticket> parse_tickets(std::string_view const string)
 {
-    auto const lines{ split(string) };
+    auto const lines{ aoc::split(string) };
     std::vector<Ticket> result{ lines.size() };
-    aoc::transform(lines, result, [](std::string_view const & line) { return scan_number_list<number_t>(line, ','); });
+    aoc::transform(lines, result, [](std::string_view const & line) {
+        return aoc::scan_number_list<number_t>(line, ',');
+    });
     return result;
 }
 
@@ -261,14 +263,14 @@ struct Day_16_Data {
         std::string_view ticket_fields_string;
         std::string_view my_ticket_values_string;
         std::string_view nearby_tickets_values_string;
-        scan(string,
-             "{}\n\nyour ticket:\n{}\n\nnearby tickets:\n{}",
-             ticket_fields_string,
-             my_ticket_values_string,
-             nearby_tickets_values_string);
+        aoc::scan(string,
+                  "{}\n\nyour ticket:\n{}\n\nnearby tickets:\n{}",
+                  ticket_fields_string,
+                  my_ticket_values_string,
+                  nearby_tickets_values_string);
 
         return Day_16_Data{ parse_rules(ticket_fields_string),
-                            scan_number_list<number_t>(my_ticket_values_string, ','),
+                            aoc::scan_number_list<number_t>(my_ticket_values_string, ','),
                             parse_tickets(nearby_tickets_values_string) };
     }
 };
@@ -421,7 +423,7 @@ std::vector<Solved_Field> deduce(std::vector<Ticket> const & tickets, std::vecto
 //==============================================================================
 std::string day_16_a(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
+    auto const input{ aoc::read_file(input_file_path) };
     auto const data{ Day_16_Data::from_string(input) };
     auto const error_rate{ get_ticket_scanning_error_rate(data.nearby_tickets, data.rules) };
 
@@ -431,7 +433,7 @@ std::string day_16_a(char const * input_file_path)
 //==============================================================================
 std::string day_16_b(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
+    auto const input{ aoc::read_file(input_file_path) };
     auto const data{ Day_16_Data::from_string(input) };
     auto const departure_product{ data.get_departure_product() };
 

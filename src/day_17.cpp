@@ -109,7 +109,7 @@ void Space::tick(size_t num_ticks)
 std::unique_ptr<Space> Space::from_string(std::string_view const & input)
 {
     // Parse lines and make sure that they represent a square
-    auto const lines{ split(input) };
+    auto const lines{ aoc::split(input) };
     assert(!lines.empty());
     auto const width{ lines.front().size() };
     assert(aoc::all_of(lines, [&](std::string_view const & line) { return line.size() == width; }));
@@ -162,7 +162,7 @@ void Space::tick_impl()
 //==============================================================================
 std::string day_17_a(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
+    auto const input{ aoc::read_file(input_file_path) };
     auto const space{ Space::from_string(input) };
     space->tick(6);
     auto const num_active_cubes{ space->num_active_cubes() };

@@ -91,26 +91,26 @@ constexpr size_t MAX_OWNERS = 32;
 
 struct Color_Info {
     color_id_t id;
-    Static_Vector<Color_Ownership<color_id_t>, MAX_OWNED> colors_contained_by_me;
-    Static_Vector<Color_Ownership<color_id_t>, MAX_OWNERS> colors_that_contain_me;
+    aoc::Static_Vector<Color_Ownership<color_id_t>, MAX_OWNED> colors_contained_by_me;
+    aoc::Static_Vector<Color_Ownership<color_id_t>, MAX_OWNERS> colors_that_contain_me;
 };
 
 struct Rule {
     std::string_view color;
-    Static_Vector<Color_Ownership<std::string_view>, MAX_OWNED> owned_colors;
+    aoc::Static_Vector<Color_Ownership<std::string_view>, MAX_OWNED> owned_colors;
     //==============================================================================
     static Rule from_string(std::string_view const & string)
     {
         Rule rule;
         std::string_view leftover;
-        scan(string, "{} bags contain {}.", rule.color, leftover);
+        aoc::scan(string, "{} bags contain {}.", rule.color, leftover);
 
         if (leftover != "no other bags") {
-            Static_Vector<std::string_view, MAX_OWNED> contained_strings;
-            scan_number_list(leftover, contained_strings, ", ");
+            aoc::Static_Vector<std::string_view, MAX_OWNED> contained_strings;
+            aoc::scan_number_list(leftover, contained_strings, ", ");
             for (auto const & contained_string : contained_strings) {
                 Color_Ownership<std::string_view> ownership;
-                scan(contained_string, "{} {} bag", ownership.quantity, ownership.color);
+                aoc::scan(contained_string, "{} {} bag", ownership.quantity, ownership.color);
                 rule.owned_colors.push_back(ownership);
             }
         }
@@ -139,7 +139,7 @@ public:
     //==============================================================================
     Color_Graph(std::string_view const & input)
     {
-        auto const lines{ split(input) };
+        auto const lines{ aoc::split(input) };
 
         std::vector<Rule> rules{};
         rules.resize(lines.size());
@@ -233,7 +233,7 @@ constexpr std::string_view TARGET = "shiny gold";
 //==============================================================================
 std::string day_7_a(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
+    auto const input{ aoc::read_file(input_file_path) };
     Color_Graph const graph{ input };
 
     auto const result{ graph.get_number_of_colors_that_contain_color(TARGET) };
@@ -243,7 +243,7 @@ std::string day_7_a(char const * input_file_path)
 //==============================================================================
 std::string day_7_b(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
+    auto const input{ aoc::read_file(input_file_path) };
     Color_Graph const graph{ input };
 
     auto const result{ graph.get_number_of_bags_contained_by_color(TARGET) };

@@ -256,7 +256,7 @@ bool satisfies_constraint(std::string_view const & entry, Constraint const & con
     auto const * const value_end{
         std::find_first_of(value_begin, entry.data() + entry.size(), STOP_CHARS.cbegin(), STOP_CHARS.cend())
     };
-    std::string_view const value_string{ value_begin, narrow<size_t>(value_end - value_begin) };
+    std::string_view const value_string{ value_begin, aoc::narrow<size_t>(value_end - value_begin) };
     auto const is_valid{ constraint.validate(value_string) };
     return is_valid;
 }
@@ -266,8 +266,8 @@ bool satisfies_constraint(std::string_view const & entry, Constraint const & con
 //==============================================================================
 std::string day_4_a(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
-    auto const entries{ split(input, "\n\n") };
+    auto const input{ aoc::read_file(input_file_path) };
+    auto const entries{ aoc::split(input, "\n\n") };
 
     auto const valid_count{ aoc::count_if(entries, [](std::string_view const & entry) -> bool {
         return aoc::all_of(CONSTRAINTS, [&entry](Constraint const & constraint) -> bool {
@@ -280,8 +280,8 @@ std::string day_4_a(char const * input_file_path)
 //==============================================================================
 std::string day_4_b(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
-    auto const entries{ split(input, "\n\n") };
+    auto const input{ aoc::read_file(input_file_path) };
+    auto const entries{ aoc::split(input, "\n\n") };
     auto const valid_count{ aoc::count_if(entries, [](std::string_view const & entry) -> bool {
         return aoc::all_of(CONSTRAINTS, [&entry](Constraint const & constraint) -> bool {
             return satisfies_constraint(entry, constraint);

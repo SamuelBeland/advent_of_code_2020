@@ -99,7 +99,7 @@ auto get_unique_answers(std::string_view const & group)
 //==============================================================================
 auto get_consensus_answers(std::string_view const & group)
 {
-    auto const persons{ split(group) };
+    auto const persons{ aoc::split(group) };
     auto const & candidates{ persons.front() };
     auto const every_person_has_candidate = [&persons](char const candidate) {
         return std::all_of(persons.cbegin() + 1, persons.cend(), [candidate](std::string_view const & person) {
@@ -115,8 +115,8 @@ auto get_consensus_answers(std::string_view const & group)
 //==============================================================================
 std::string day_6_a(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
-    auto const groups{ split(input, "\n\n") };
+    auto const input{ aoc::read_file(input_file_path) };
+    auto const groups{ aoc::split(input, "\n\n") };
     auto const sum_of_group_sums{
         aoc::transform_reduce(groups, std::string::difference_type(0), get_unique_answers, std::plus())
     };
@@ -126,8 +126,8 @@ std::string day_6_a(char const * input_file_path)
 //==============================================================================
 std::string day_6_b(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
-    auto const groups{ split(input, "\n\n") };
+    auto const input{ aoc::read_file(input_file_path) };
+    auto const groups{ aoc::split(input, "\n\n") };
     auto const sum_of_group_sums{
         aoc::transform_reduce(groups, std::string::difference_type(0), get_consensus_answers, std::plus())
     };

@@ -107,7 +107,7 @@ using number_t = size_t;
 size_t parse_preamble_size(std::string_view const & line)
 {
     size_t preamble;
-    scan(line, "preamble: {}", preamble);
+    aoc::scan(line, "preamble: {}", preamble);
     return preamble;
 }
 
@@ -197,11 +197,11 @@ number_t find_weakness(number_t const intruder, std::vector<number_t> const & nu
 //==============================================================================
 std::string day_9_a(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
-    auto const lines{ split(input) };
+    auto const input{ aoc::read_file(input_file_path) };
+    auto const lines{ aoc::split(input) };
 
     auto const preamble_size{ parse_preamble_size(lines.front()) };
-    auto const numbers{ parse_number_list<number_t>(lines.cbegin() + 1, lines.cend()) };
+    auto const numbers{ aoc::parse_number_list<number_t>(lines.cbegin() + 1, lines.cend()) };
     auto const intruder{ find_intruder(numbers, preamble_size) };
 
     return std::to_string(intruder);
@@ -210,11 +210,11 @@ std::string day_9_a(char const * input_file_path)
 //==============================================================================
 std::string day_9_b(char const * input_file_path)
 {
-    auto const input{ read_file(input_file_path) };
-    auto const lines{ split(input) };
+    auto const input{ aoc::read_file(input_file_path) };
+    auto const lines{ aoc::split(input) };
 
     auto const preamble_size{ parse_preamble_size(lines.front()) };
-    auto const numbers{ parse_number_list<number_t>(lines.cbegin() + 1, lines.cend()) };
+    auto const numbers{ aoc::parse_number_list<number_t>(lines.cbegin() + 1, lines.cend()) };
     auto const intruder{ find_intruder(numbers, preamble_size) };
 
     auto const weakness{ find_weakness(intruder, numbers) };
