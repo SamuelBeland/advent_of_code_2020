@@ -52,6 +52,43 @@ void copy_or_parse(std::string_view const & string, T & out_param)
 }
 
 //==============================================================================
+template<typename Func, typename Separator>
+void for_each_element_in_string(std::string_view const & string, Func const & func, Separator const & separator)
+{
+    if constexpr (std::is_same_v<Separator, char>) {
+        auto const * element_begin{ string.data() };
+        auto const call_func = [&](char const * element_end) {
+            auto const size{ narrow<std::size_t>(std::distance(element_begin, element_end)) };
+            func(std::string_view{ element_begin, size });
+            element_begin = std::next(element_end);
+        };
+        for (auto const & c : string) {
+            if (c == separator) {
+                call_func(&c);
+            }
+        }
+        call_func(string.data() + string.size());
+    } else if constexpr (std::is_same_v<Separator, std::string_view>) {
+        auto element_begin{ string.cbegin() };
+
+        auto const find_next_separator
+            = [&]() { return std::search(element_begin, string.cend(), separator.cbegin(), separator.cend()); };
+
+        auto const call_func = [&](std::string_view::const_iterator const & separator_begin) {
+            auto const size{ narrow<std::size_t>(std::distance(element_begin, separator_begin)) };
+            func(std::string_view{ &*element_begin, size });
+        };
+
+        for (auto separator_begin{ find_next_separator() }; separator_begin != string.cend();
+             separator_begin = find_next_separator()) {
+            call_func(separator_begin);
+            element_begin = separator_begin + separator.size();
+        }
+        call_func(string.cend());
+    }
+}
+
+//==============================================================================
 template<typename T, typename Coll>
 std::vector<T> parse_number_list(Coll const & collection)
 {
@@ -164,22 +201,13 @@ void scan(std::string_view const & string, std::string_view const & format, T & 
 template<typename T>
 void scan_number_list(std::string_view const & string, T & collection, std::string_view const & separator)
 {
-    size_t begin{};
-    auto end{ string.find(separator) };
-    while (end != std::string_view::npos) {
+    auto const add_element = [&](std::string_view const & element) {
         typename T::value_type item;
-        auto const value_string{ string.substr(begin, end - begin) };
-        copy_or_parse(value_string, item);
+        copy_or_parse(element, item);
         collection.push_back(item);
-        begin = end + separator.size();
-        end = string.find(separator, begin);
-    }
-    if (begin < string.size()) {
-        typename T::value_type item;
-        auto const value_string{ string.substr(begin) };
-        copy_or_parse(value_string, item);
-        collection.push_back(item);
-    }
+    };
+
+    for_each_element_in_string(string, add_element, separator);
 }
 
 //==============================================================================
