@@ -340,8 +340,8 @@ private:
     {
         size_t count{};
 
-        auto const origin_x{ static_cast<int>(index % m_width) };
-        auto const origin_y{ static_cast<int>(index / m_width) };
+        auto const origin_x{ narrow<int>(index % m_width) };
+        auto const origin_y{ narrow<int>(index / m_width) };
 
         for (auto y_direction{ -1 }; y_direction <= 1; ++y_direction) {
             for (auto x_direction{ -1 }; x_direction <= 1; ++x_direction) {

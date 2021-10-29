@@ -59,8 +59,6 @@
 //
 // Given your starting numbers, what will be the 30000000th number spoken ?
 
-#include <unordered_map>
-
 #include "utils.hpp"
 #include <resources.hpp>
 

@@ -129,8 +129,6 @@ struct Point {
     }
     Point & rotate_around_origin(int const angle, bool const clockwise)
     {
-        static constexpr auto MAX_DIRECTION{ static_cast<int>(Direction::MAX) };
-
         assert(angle % 90 == 0 && angle >= 0 && angle <= 270);
         auto const number_of_rotations{ angle / 90 };
 

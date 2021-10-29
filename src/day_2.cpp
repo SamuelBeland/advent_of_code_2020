@@ -113,11 +113,11 @@ std::string day_2_b(char const * input_file_path)
         auto const & character{ entry.password_policy.character };
         auto const & index_1{ entry.password_policy.param_1 };
         auto const & index_2{ entry.password_policy.param_2 };
-        assert(index_1 > 0 && static_cast<size_t>(index_1) <= entry.password.size());
-        assert(index_2 > 0 && static_cast<size_t>(index_2) <= entry.password.size());
+        assert(index_1 > 0 && narrow<size_t>(index_1) <= entry.password.size());
+        assert(index_2 > 0 && narrow<size_t>(index_2) <= entry.password.size());
 
-        auto const index_1_matches{ entry.password[static_cast<size_t>(index_1) - 1] == character };
-        auto const index_2_matches{ entry.password[static_cast<size_t>(index_2) - 1] == character };
+        auto const index_1_matches{ entry.password[narrow<size_t>(index_1) - 1] == character };
+        auto const index_2_matches{ entry.password[narrow<size_t>(index_2) - 1] == character };
         return index_1_matches != index_2_matches;
     });
 }

@@ -16,6 +16,41 @@ std::string read_file(char const * path);
 std::vector<std::string_view> split(std::string_view const & string, char separator = '\n');
 std::vector<std::string_view> split(std::string_view const & string, std::string_view const & separator);
 
+#if defined(NDEBUG)
+static constexpr auto IS_DEBUG = false;
+#else
+static constexpr auto IS_DEBUG = true;
+#endif
+
+//==============================================================================
+template<typename To, typename From>
+To narrow(From const & from) noexcept(!IS_DEBUG)
+{
+    if constexpr (IS_DEBUG) {
+        assert(std::is_signed_v<To> || from >= 0);
+        To const newValue{ static_cast<To>(from) };
+        assert(static_cast<From>(newValue) == from);
+        return newValue;
+    } else {
+        return static_cast<To>(from);
+    }
+}
+
+//==============================================================================
+template<typename T>
+void copy_or_parse(std::string_view const & string, T & out_param)
+{
+    if constexpr (std::is_same_v<std::string_view, T> || std::is_same_v<std::string, T>) {
+        out_param = string;
+    } else if constexpr (std::is_same_v<char, T>) {
+        assert(string.size() == 1);
+        out_param = string.front();
+    } else {
+        [[maybe_unused]] auto const error{ std::from_chars(string.data(), string.data() + string.size(), out_param) };
+        assert(error.ec == std::errc());
+    }
+}
+
 //==============================================================================
 template<typename T, typename Coll>
 std::vector<T> parse_number_list(Coll const & collection)
@@ -38,7 +73,7 @@ template<typename T, typename It>
 std::vector<T> parse_number_list(It begin, It const end)
 {
     std::vector<T> result{};
-    result.reserve(static_cast<size_t>(end - begin));
+    result.reserve(narrow<size_t>(end - begin));
 
     while (begin != end) {
         T value;
@@ -81,36 +116,6 @@ public:
 };
 
 //==============================================================================
-template<typename T>
-void copy_or_parse(std::string_view const & string, T & out_param)
-{
-    [[maybe_unused]] auto const error{ std::from_chars(string.data(), string.data() + string.size(), out_param) };
-    assert(error.ec == std::errc());
-}
-
-//==============================================================================
-template<>
-inline void copy_or_parse(std::string_view const & string, std::string_view & out_param)
-{
-    out_param = string;
-}
-
-//==============================================================================
-template<>
-inline void copy_or_parse(std::string_view const & string, std::string & out_param)
-{
-    out_param = string;
-}
-
-//==============================================================================
-template<>
-inline void copy_or_parse(std::string_view const & string, char & out_param)
-{
-    assert(string.size() == 1);
-    out_param = string.front();
-}
-
-//==============================================================================
 template<typename... Ts>
 void scan(std::string_view const & string, std::string_view const & format)
 {
@@ -129,12 +134,12 @@ void scan(std::string_view const & string, std::string_view const & format, T & 
     auto const * const format_end{ format.data() + format.size() };
 
     auto const * const format_prefix_end{ std::find(format_begin, format_end, OPEN_PARAM) };
-    auto const prefix_length{ static_cast<size_t>(format_prefix_end - format_begin) };
+    auto const prefix_length{ narrow<size_t>(format_prefix_end - format_begin) };
     auto const prefix{ format.substr(0, prefix_length) };
 
     auto const * const format_suffix_begin{ format_prefix_end + PARAM_SIZE };
     auto const * const format_suffix_end{ std::find(format_suffix_begin, format_end, OPEN_PARAM) };
-    auto const suffix_length{ static_cast<size_t>(format_suffix_end - format_suffix_begin) };
+    auto const suffix_length{ narrow<size_t>(format_suffix_end - format_suffix_begin) };
     std::string_view const suffix{ format_suffix_begin, suffix_length };
 
     auto const * const string_begin{ string.data() };
@@ -144,7 +149,7 @@ void scan(std::string_view const & string, std::string_view const & format, T & 
                                     + prefix_length };
     auto const * const value_end{ suffix_length ? std::search(value_begin, string_end, suffix.cbegin(), suffix.cend())
                                                 : string_end };
-    auto const value_length{ static_cast<size_t>(value_end - value_begin) };
+    auto const value_length{ narrow<size_t>(value_end - value_begin) };
     std::string_view const value{ value_begin, value_length };
 
     copy_or_parse(value, out_param);
@@ -238,14 +243,14 @@ void transform(In1 const & in1, In2 const & in2, Dest & dest, Fn const & fn)
 template<typename Coll, typename T, typename Fn>
 [[nodiscard]] auto reduce(Coll const & coll, T && init, Fn const & fn)
 {
-    return std::reduce(coll.cbegin(), coll.cend(), init, fn);
+    return std::reduce(coll.cbegin(), coll.cend(), std::forward<T>(init), fn);
 }
 
 template<typename Coll, typename T, typename Transform_Fn, typename Reduce_Fn>
 [[nodiscard]] auto
     transform_reduce(Coll const & coll, T && init, Transform_Fn const & transform_fn, Reduce_Fn const & reduce_fn)
 {
-    return std::transform_reduce(coll.cbegin(), coll.cend(), init, reduce_fn, transform_fn);
+    return std::transform_reduce(coll.cbegin(), coll.cend(), std::forward<T>(init), reduce_fn, transform_fn);
 }
 
 template<typename In1, typename In2, typename T, typename Transform_Fn, typename Reduce_Fn>
@@ -255,7 +260,12 @@ template<typename In1, typename In2, typename T, typename Transform_Fn, typename
                                     Transform_Fn const & transform_fn,
                                     Reduce_Fn const & reduce_fn)
 {
-    return std::transform_reduce(in1.cbegin(), in1.cend(), in2.cbegin(), init, reduce_fn, transform_fn);
+    return std::transform_reduce(in1.cbegin(),
+                                 in1.cend(),
+                                 in2.cbegin(),
+                                 std::forward<T>(init),
+                                 reduce_fn,
+                                 transform_fn);
 }
 
 template<typename Coll>
@@ -265,10 +275,11 @@ void sort(Coll & coll)
 }
 
 template<typename Coll>
-[[nodiscard]] auto sort(Coll && coll)
+Coll sort(Coll && coll)
 {
-    std::sort(coll.begin(), coll.end());
-    return coll;
+    auto moved{ std::move(coll) };
+    std::sort(moved.begin(), moved.end());
+    return moved;
 }
 
 template<typename Coll, typename T>

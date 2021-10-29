@@ -256,7 +256,7 @@ bool satisfies_constraint(std::string_view const & entry, Constraint const & con
     auto const * const value_end{
         std::find_first_of(value_begin, entry.data() + entry.size(), STOP_CHARS.cbegin(), STOP_CHARS.cend())
     };
-    std::string_view const value_string{ value_begin, static_cast<size_t>(value_end - value_begin) };
+    std::string_view const value_string{ value_begin, narrow<size_t>(value_end - value_begin) };
     auto const is_valid{ constraint.validate(value_string) };
     return is_valid;
 }

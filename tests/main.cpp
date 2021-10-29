@@ -261,9 +261,9 @@ TEST_CASE("Benchmarks")
 {
     for (auto day_it{ DAYS.crbegin() }; day_it != DAYS.crend(); ++day_it) {
         // TEMP : removing day_15_b because it's taking forever
-        if (strcmp(day_it->name, "day_15_b") == 0) {
-           continue;
-        }
+        // if (strcmp(day_it->name, "day_15_b") == 0) {
+        //    continue;
+        // }
 
         BENCHMARK(day_it->name) { return day_it->function(); };
     }
