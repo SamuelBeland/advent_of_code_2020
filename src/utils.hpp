@@ -230,7 +230,7 @@ void transform(In const & coll, Dest & dest, Fn const & fn)
 }
 
 template<typename In1, typename In2, typename Dest, typename Fn>
-void transform(In1 const & in1, In2 const & in2, Dest & out, Fn const & fn)
+void transform(In1 const & in1, In2 const & in2, Dest & dest, Fn const & fn)
 {
     std::transform(in1.cbegin(), in1.cend(), in2.cbegin(), dest.begin(), fn);
 }
@@ -357,4 +357,11 @@ template<typename Coll, typename T>
 {
     assert(std::is_sorted(coll.cbegin(), coll.cend()));
     return std::lower_bound(coll.cbegin(), coll.cend(), value);
+}
+
+template<typename Coll, typename T>
+[[nodiscard]] auto upper_bound(Coll const & coll, T const & value)
+{
+    assert(std::is_sorted(coll.cbegin(), coll.cend()));
+    return std::upper_bound(coll.cbegin(), coll.cend(), value);
 }

@@ -188,13 +188,9 @@ std::string day_3_b(char const * input_file_path)
 
     Forest const forest{ input_file_path };
 
-    auto const product_of_tree_counts{ reduce(SLOPES,
-                                              size_t{ 1 },
-                                              [&forest](size_t const current_total, Slope const & slope) {
-                                                  auto const new_total{ current_total
-                                                                        * forest.count_trees_in_slope(slope) };
-                                                  return new_total;
-                                              }) };
+    static auto const count_trees_in_slope = [&](Slope const & slope) { return forest.count_trees_in_slope(slope); };
+
+    auto const product_of_tree_counts{ transform_reduce(SLOPES, size_t{ 1 }, count_trees_in_slope, std::multiplies()) };
 
     return std::to_string(product_of_tree_counts);
 }

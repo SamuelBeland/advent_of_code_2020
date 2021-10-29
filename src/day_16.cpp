@@ -102,6 +102,7 @@
 #include <resources.hpp>
 
 #include <algorithm>
+#include <cassert>
 #include <iterator>
 
 namespace
@@ -114,7 +115,7 @@ struct Range {
     number_t max;
 
     //==============================================================================
-    [[nodiscard]] bool contains(number_t const value) const { return value >= min && value <= max; }
+    [[nodiscard]] constexpr bool contains(number_t const value) const { return value >= min && value <= max; }
 };
 
 //==============================================================================
@@ -124,19 +125,20 @@ struct Rule {
     Range high_range;
 
     //==============================================================================
-    [[nodiscard]] bool contains(number_t const value) const
+    [[nodiscard]] constexpr bool contains(number_t const value) const
     {
         return low_range.contains(value) || high_range.contains(value);
     }
     [[nodiscard]] bool contains_all(std::vector<number_t> const & values) const
     {
-        assert(std::is_sorted(std::cbegin(values), std::cend(values)));
+        assert(std::is_sorted(values.cbegin(), values.cend()));
+
         if (!low_range.contains(values.front()) || !high_range.contains(values.back())) {
             return false;
         }
 
-        auto const end_of_low_range{ std::upper_bound(std::cbegin(values), std::cend(values), low_range.max) };
-        auto const start_of_high_range{ std::lower_bound(end_of_low_range, std::cend(values), high_range.min) };
+        auto const end_of_low_range{ upper_bound(values, low_range.max) };
+        auto const start_of_high_range{ std::lower_bound(end_of_low_range, values.cend(), high_range.min) };
 
         // no values between low_range.max and high_range.min
         return end_of_low_range == start_of_high_range;
@@ -162,10 +164,9 @@ struct Rule {
 {
     auto const lines{ split(string) };
     std::vector<Rule> result{};
-    result.reserve(lines.size());
-    std::transform(lines.cbegin(), lines.cend(), std::back_inserter(result), [](std::string_view const & line) {
-        return Rule::from_string(line);
-    });
+    result.resize(lines.size());
+    transform(lines, result, Rule::from_string);
+
     return result;
 }
 
@@ -184,19 +185,18 @@ std::vector<Ticket> parse_tickets(std::string_view const string)
 //==============================================================================
 number_t get_ticket_scanning_error_rate(std::vector<Ticket> const & tickets, std::vector<Rule> const & rules)
 {
-    auto const is_valid_entry = [&](number_t const & value) {
-        return any_of(rules, [&](Rule const & rule) { return rule.contains(value); });
+    auto const is_invalid_entry = [&](number_t const & value) {
+        return all_of(rules, [&](Rule const & rule) { return !rule.contains(value); });
     };
 
-    auto const accumulate_invalid_entries = [&](Ticket const & ticket) {
-        return reduce(ticket, number_t{}, [&](number_t const & error_rate_for_ticket, number_t const & value) {
-            return is_valid_entry(value) ? error_rate_for_ticket : error_rate_for_ticket + value;
-        });
-    };
+    std::vector<number_t> invalid_entries{};
 
-    return reduce(tickets, number_t{}, [&](number_t const & error_rate, Ticket const & ticket) {
-        return error_rate + accumulate_invalid_entries(ticket);
-    });
+    auto inserter{ std::back_inserter(invalid_entries) };
+    for (auto const & ticket : tickets) {
+        std::copy_if(ticket.cbegin(), ticket.cend(), std::back_inserter(invalid_entries), is_invalid_entry);
+    }
+
+    return reduce(invalid_entries, number_t{}, std::plus());
 }
 
 //==============================================================================

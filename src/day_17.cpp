@@ -1,6 +1,7 @@
 #include "utils.hpp"
 
 #include <iterator>
+#include <memory>
 #include <resources.hpp>
 
 namespace

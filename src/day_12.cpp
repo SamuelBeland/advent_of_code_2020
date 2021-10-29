@@ -218,7 +218,14 @@ std::string day_12_a(char const * input_file_path)
     auto const input{ read_file(input_file_path) };
     auto const lines{ split(input) };
 
-    auto const position{ transform_reduce(lines, Position{ 0, 0, Direction::east }, parse_step, apply_step) };
+    std::vector<Step> steps{};
+    steps.resize(lines.size());
+    transform(lines, steps, parse_step);
+
+    Position position{ 0, 0, Direction::east };
+    for (auto const & step : steps) {
+        apply_step(position, step);
+    }
 
     auto const manhattan_distance{ std::abs(position.x) + std::abs(position.y) };
 

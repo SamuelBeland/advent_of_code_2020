@@ -132,10 +132,11 @@ class Memory : public std::unordered_map<uint64_t, uint64_t>
 public:
     uint64_t sum_values() const
     {
-        auto const sum{ reduce(*this,
-
-                               uint64_t{},
-                               [](uint64_t const value, value_type const & node) { return value + node.second; }) };
+        auto const sum{ transform_reduce(
+            *this,
+            uint64_t{},
+            [](value_type const & node) { return node.second; },
+            std::plus()) };
         return sum;
     }
 };

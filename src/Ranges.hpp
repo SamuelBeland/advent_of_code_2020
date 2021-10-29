@@ -41,8 +41,9 @@ public:
         }
         const_iterator & operator=(const_iterator const &) = default;
 
-        auto operator*() const { return (*m_transformation)(*m_it); }
-        bool operator!=(const_iterator const & other) const { return m_it != other.m_it; }
+        [[nodiscard]] auto operator*() const { return (*m_transformation)(*m_it); }
+        [[nodiscard]] bool operator!=(const_iterator const & other) const { return m_it != other.m_it; }
+        [[nodiscard]] bool operator==(const_iterator const & other) const { return m_it == other.m_it; }
         const_iterator & operator++()
         {
             ++m_it;
