@@ -1,6 +1,7 @@
 #pragma once
 
 #include "narrow.hpp"
+#include "shortcuts.hpp"
 
 #include <algorithm>
 #include <charconv>
@@ -33,6 +34,7 @@ void scan_no_prefix(StringView const & string,
                     T & out_param,
                     Ts &... other_out_params) noexcept(!detail::IS_DEBUG);
 
+//==============================================================================
 [[nodiscard]] constexpr std::size_t strlen(char const * str) noexcept
 {
     size_t result{};
@@ -86,6 +88,26 @@ public:
     //==============================================================================
     [[nodiscard]] constexpr std::size_t size() const noexcept { return m_size; }
     [[nodiscard]] constexpr bool empty() const noexcept { return m_size == 0; }
+    [[nodiscard]] constexpr std::size_t count(char const c) const noexcept
+    {
+        std::size_t result{};
+        for (auto const & c_ : *this) {
+            if (c_ == c) {
+                ++result;
+            }
+        }
+        return result;
+    }
+    [[nodiscard]] std::size_t count(StringView const & other) const noexcept
+    {
+        std::size_t result{};
+        auto const * element_end{ find(other) };
+        while (element_end != cend()) {
+            ++result;
+            element_end = StringView{ element_end + other.size(), cend() }.find(other);
+        }
+        return result;
+    }
     //==============================================================================
     [[nodiscard]] constexpr char const * find(char const c) const noexcept
     {
@@ -154,6 +176,40 @@ public:
             assert(error.ec == std::errc());
         }
         return value;
+    }
+    //==============================================================================
+    template<typename T, typename Separator>
+    [[nodiscard]] std::vector<T> parse_list(Separator const & separator) const noexcept(!detail::IS_DEBUG)
+    {
+        auto const size{ count(separator) };
+        std::vector<T> result{};
+        result.resize(size);
+        auto cur{ result.begin() };
+
+        auto const parse_and_add = [&](StringView const & string) { cur++ = string.parse<T>(); };
+
+        iterate(parse_and_add, separator);
+
+        return result;
+    }
+    //==============================================================================
+    template<typename T, typename Separator>
+    [[nodiscard]] std::vector<T> parse_list_and_sort(Separator const & separator) const noexcept(!detail::IS_DEBUG)
+    {
+        auto result{ parse_list<T>(separator) };
+        aoc::sort(result);
+        return result;
+    }
+    //==============================================================================
+    template<typename Func, typename Separator>
+    constexpr void iterate(Func const & func, Separator const & separator) const noexcept
+    {
+        char const * start{ cbegin() };
+        do {
+            auto const element{ StringView{ start, cend() }.upTo(separator) };
+            func(element);
+            start = element.cend();
+        } while (start != cend());
     }
 };
 
