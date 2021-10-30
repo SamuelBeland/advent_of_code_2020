@@ -1,5 +1,6 @@
 #pragma once
 
+#include "narrow.hpp"
 #include "shortcuts.hpp"
 
 #include <array>
@@ -12,12 +13,6 @@ namespace aoc
 {
 namespace detail
 {
-#if defined(NDEBUG)
-static constexpr auto IS_DEBUG = false;
-#else
-static constexpr auto IS_DEBUG = true;
-#endif
-
 //==============================================================================
 template<typename T>
 T copy_or_parse(std::string_view const & string)
@@ -45,27 +40,13 @@ std::vector<std::string_view> split(std::string_view const & string, char separa
 std::vector<std::string_view> split(std::string_view const & string, std::string_view const & separator);
 
 //==============================================================================
-template<typename To, typename From>
-To narrow(From const & from) noexcept(!detail::IS_DEBUG)
-{
-    if constexpr (detail::IS_DEBUG) {
-        assert(std::is_signed_v<To> || from >= 0);
-        To const newValue{ static_cast<To>(from) };
-        assert(static_cast<From>(newValue) == from);
-        return newValue;
-    } else {
-        return static_cast<To>(from);
-    }
-}
-
-//==============================================================================
 template<typename Func, typename Separator>
 void for_each_element_in_string(std::string_view const & string, Func const & func, Separator const & separator)
 {
     if constexpr (std::is_same_v<Separator, char>) {
         auto const * element_begin{ string.data() };
         auto const call_func = [&](char const * element_end) {
-            auto const size{ narrow<std::size_t>(std::distance(element_begin, element_end)) };
+            auto const size{ aoc::narrow<std::size_t>(std::distance(element_begin, element_end)) };
             func(std::string_view{ element_begin, size });
         };
         for (auto const & c : string) {

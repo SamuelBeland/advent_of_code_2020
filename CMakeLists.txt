@@ -21,6 +21,7 @@ add_library(adventlib STATIC)
 target_sources(adventlib PRIVATE
     "src/utils.cpp" "src/utils.hpp"
     "src/Ranges.hpp" "src/shortcuts.hpp"
+    "src/StringView.cpp" "src/narrow.hpp"
 
     "src/day_1.cpp"
     "src/day_2.cpp"
