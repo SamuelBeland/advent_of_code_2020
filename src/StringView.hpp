@@ -22,7 +22,7 @@ template<class InputIt1, class InputIt2>
 [[nodiscard]] constexpr bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2);
 
 //==============================================================================
-template<typename T, typename... Ts>
+template<typename...>
 void scan_no_prefix(StringView const & /*string*/, StringView const & /*format*/) noexcept(!detail::IS_DEBUG)
 {
 }
@@ -131,6 +131,9 @@ public:
     [[nodiscard]] constexpr StringView upTo(char const c) const noexcept { return StringView{ cbegin(), find(c) }; }
     [[nodiscard]] StringView upTo(StringView const & other) const noexcept
     {
+        if (other.empty()) {
+            return *this;
+        }
         return StringView{ cbegin(), find(other) };
     }
     [[nodiscard]] constexpr StringView startingAfter(char const c) const noexcept
@@ -141,6 +144,9 @@ public:
     }
     [[nodiscard]] StringView startingAfter(StringView const & other) const noexcept
     {
+        // if (other.empty()) {
+        //    return *this;
+        //}
         auto const * find_result{ find(other) };
         auto const * new_begin{ find_result == cend() ? find_result : find_result + other.size() };
         return StringView{ new_begin, cend() };
@@ -153,11 +159,11 @@ public:
     }
     //==============================================================================
     template<typename... Ts>
-    void scan(StringView const & format, Ts &... out_params)
+    void scan(StringView const & format, Ts &... out_params) const noexcept(!detail::IS_DEBUG)
     {
         auto const prefix_to_match{ format.upTo(detail::FORMAT_CAPTURE_PREFIX) };
         auto const string_without_prefix{ startingAfter(prefix_to_match) };
-        StringView const format_without_prefix{ prefix_to_match.cend() + 2, format.cend() };
+        StringView const format_without_prefix{ format.cbegin() + prefix_to_match.size(), format.cend() };
 
         detail::scan_no_prefix(string_without_prefix, format_without_prefix, out_params...);
     }
@@ -166,11 +172,13 @@ public:
     [[nodiscard]] T parse() const noexcept(!detail::IS_DEBUG)
     {
         T value;
-        if constexpr (std::is_same_v<std::string_view, T> || std::is_same_v<std::string, T>) {
+        if constexpr (std::is_same_v<StringView, T> || std::is_same_v<std::string, T>) {
             value = *this;
         } else if constexpr (std::is_same_v<char, T>) {
             assert(m_size == 1);
             value = front();
+        } else if constexpr (std::is_same_v<std::string_view, T>) {
+            value = std::string_view{ cbegin(), m_size };
         } else {
             [[maybe_unused]] auto const error{ std::from_chars(cbegin(), cend(), value) };
             assert(error.ec == std::errc());
@@ -225,6 +233,21 @@ public:
             cur = leftover.upTo(separator);
         }
         func(cur);
+    }
+
+    template<typename Func, typename Separator>
+    auto iterator_transform(Func const & func, Separator const & separator)
+    {
+        using value_type = decltype(func(StringView{}));
+        std::vector<value_type> result{};
+        result.resize(count(separator) + 1);
+        auto cur{ result.begin() };
+
+        auto const transform_and_add = [&](StringView const & string) { *cur++ = func(string); };
+
+        iterate(transform_and_add, separator);
+
+        return result;
     }
 };
 

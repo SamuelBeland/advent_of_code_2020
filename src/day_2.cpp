@@ -47,10 +47,10 @@
 //
 // How many passwords are valid according to the new interpretation of the policies ?
 
+#include "StringView.hpp"
 #include "utils.hpp"
-#include <resources.hpp>
 
-#include "Ranges.hpp"
+#include <resources.hpp>
 
 namespace
 {
@@ -66,15 +66,14 @@ struct Entry {
     Password_Policy password_policy;
     std::string_view password;
     //==============================================================================
-    static Entry from_string(std::string_view const & string)
+    static Entry from_string(aoc::StringView const & string)
     {
         Entry entry;
-        aoc::scan(string,
-                  "{}-{} {}: {}",
-                  entry.password_policy.param_1,
-                  entry.password_policy.param_2,
-                  entry.password_policy.character,
-                  entry.password);
+        string.scan("{}-{} {}: {}",
+                    entry.password_policy.param_1,
+                    entry.password_policy.param_2,
+                    entry.password_policy.character,
+                    entry.password);
 
         return entry;
     }
@@ -82,11 +81,11 @@ struct Entry {
 
 //==============================================================================
 template<typename Pred>
-std::string day_2(char const * input_file_path, Pred && predicate)
+std::string day_2(char const * input_file_path, Pred const & predicate)
 {
     auto const input{ aoc::read_file(input_file_path) };
     auto const lines{ aoc::split(input) };
-    auto const entries{ lines | views::transform(Entry::from_string) };
+    auto const entries{ aoc::StringView{ input }.iterator_transform(Entry::from_string, '\n') };
     auto const count{ aoc::count_if(entries, predicate) };
 
     return std::to_string(count);

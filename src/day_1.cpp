@@ -74,7 +74,7 @@ std::string day_1_a(const char * input_file_path)
 std::string day_1_b(const char * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const numbers{ aoc::scan_and_sort_number_list<int>(input, "\n") };
+    auto const numbers{ aoc::StringView{ input }.parse_list_and_sort<int>('\n') };
 
     auto small{ numbers.cbegin() };
     auto middle{ numbers.cbegin() + 1 };
