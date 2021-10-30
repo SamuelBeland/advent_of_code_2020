@@ -181,12 +181,12 @@ public:
     template<typename T, typename Separator>
     [[nodiscard]] std::vector<T> parse_list(Separator const & separator) const noexcept(!detail::IS_DEBUG)
     {
-        auto const size{ count(separator) };
+        auto const size{ count(separator) + 1 };
         std::vector<T> result{};
         result.resize(size);
         auto cur{ result.begin() };
 
-        auto const parse_and_add = [&](StringView const & string) { cur++ = string.parse<T>(); };
+        auto const parse_and_add = [&](StringView const & string) { *cur++ = string.parse<T>(); };
 
         iterate(parse_and_add, separator);
 
@@ -201,15 +201,30 @@ public:
         return result;
     }
     //==============================================================================
-    template<typename Func, typename Separator>
-    constexpr void iterate(Func const & func, Separator const & separator) const noexcept
+    template<typename Func>
+    constexpr void iterate(Func const & func, char const separator) const noexcept
     {
-        char const * start{ cbegin() };
-        do {
-            auto const element{ StringView{ start, cend() }.upTo(separator) };
-            func(element);
-            start = element.cend();
-        } while (start != cend());
+        StringView cur{ cbegin(), find(separator) };
+
+        while (cur.cend() != cend()) {
+            func(cur);
+            StringView const leftover{ std::next(cur.cend()), cend() };
+            cur = leftover.upTo(separator);
+        }
+        func(cur);
+    }
+
+    template<typename Func>
+    void iterate(Func const & func, StringView const & separator) const noexcept
+    {
+        StringView cur{ cbegin(), find(separator) };
+
+        while (cur.cend() != cend()) {
+            func(cur);
+            StringView const leftover{ cur.cend() + separator.size(), cend() };
+            cur = leftover.upTo(separator);
+        }
+        func(cur);
     }
 };
 
