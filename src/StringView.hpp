@@ -71,10 +71,16 @@ public:
     StringView & operator=(StringView const &) = default;
     StringView & operator=(StringView &&) = default;
     //==============================================================================
-    [[nodiscard]] constexpr char const * begin() const { return m_data; }
-    [[nodiscard]] constexpr char const * end() const { return m_data + m_size; }
-    [[nodiscard]] constexpr char const * cbegin() const { return m_data; }
-    [[nodiscard]] constexpr char const * cend() const { return m_data + m_size; }
+    [[nodiscard]] constexpr char const * begin() const noexcept { return m_data; }
+    [[nodiscard]] constexpr char const * end() const noexcept { return m_data + m_size; }
+    [[nodiscard]] constexpr char const * cbegin() const noexcept { return m_data; }
+    [[nodiscard]] constexpr char const * cend() const noexcept { return m_data + m_size; }
+    //==============================================================================
+    [[nodiscard]] constexpr char const & operator[](std::size_t const & index) const noexcept(!detail::IS_DEBUG)
+    {
+        assert(index < m_size);
+        return m_data[index];
+    }
     //==============================================================================
     [[nodiscard]] constexpr bool operator==(StringView const & other) const noexcept
     {

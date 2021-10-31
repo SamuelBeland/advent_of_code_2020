@@ -64,7 +64,7 @@ struct Password_Policy {
 //==============================================================================
 struct Entry {
     Password_Policy password_policy;
-    std::string_view password;
+    aoc::StringView password;
     //==============================================================================
     static Entry from_string(aoc::StringView const & string)
     {
@@ -84,7 +84,6 @@ template<typename Pred>
 std::string day_2(char const * input_file_path, Pred const & predicate)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const lines{ aoc::split(input) };
     auto const entries{ aoc::StringView{ input }.iterator_transform(Entry::from_string, '\n') };
     auto const count{ aoc::count_if(entries, predicate) };
 
