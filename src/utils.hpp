@@ -1,5 +1,6 @@
 #pragma once
 
+#include "StringView.hpp"
 #include "narrow.hpp"
 #include "shortcuts.hpp"
 
@@ -36,8 +37,23 @@ T copy_or_parse(std::string_view const & string)
 std::string read_file(char const * path);
 
 //==============================================================================
-std::vector<std::string_view> split(std::string_view const & string, char separator = '\n');
-std::vector<std::string_view> split(std::string_view const & string, std::string_view const & separator);
+std::vector<std::string_view> split_____________(std::string_view const & string, char separator = '\n');
+std::vector<std::string_view> split_____________(std::string_view const & string, std::string_view const & separator);
+
+template<typename Separator>
+std::vector<aoc::StringView> split(StringView const & string, Separator const & separator)
+{
+    std::vector<aoc::StringView> result{};
+    auto const size{ string.count(separator) + 1 };
+    result.resize(size);
+    auto inserter{ result.begin() };
+
+    auto const add_element_to_result = [&](aoc::StringView const & element) { *inserter++ = element; };
+
+    string.iterate(add_element_to_result, separator);
+
+    return result;
+}
 
 //==============================================================================
 template<typename Func, typename Separator>

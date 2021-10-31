@@ -162,7 +162,7 @@ struct Rule {
 //==============================================================================
 [[nodiscard]] std::vector<Rule> parse_rules(std::string_view const & string)
 {
-    auto const lines{ aoc::split(string) };
+    auto const lines{ aoc::split_____________(string) };
     std::vector<Rule> result{};
     result.resize(lines.size());
     aoc::transform(lines, result, Rule::from_string);
@@ -176,7 +176,7 @@ using Ticket = std::vector<number_t>;
 //==============================================================================
 std::vector<Ticket> parse_tickets(std::string_view const string)
 {
-    auto const lines{ aoc::split(string) };
+    auto const lines{ aoc::split_____________(string) };
     std::vector<Ticket> result{ lines.size() };
     aoc::transform(lines, result, [](std::string_view const & line) {
         return aoc::scan_number_list<number_t>(line, ',');

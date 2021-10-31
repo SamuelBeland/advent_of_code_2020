@@ -25,7 +25,7 @@ std::string read_file(char const * path)
 }
 
 //==============================================================================
-std::vector<std::string_view> split(std::string_view const & string, char const separator)
+std::vector<std::string_view> split_____________(std::string_view const & string, char const separator)
 {
     // locate separators
     std::vector<char const *> separators_ptr{};
@@ -55,7 +55,7 @@ std::vector<std::string_view> split(std::string_view const & string, char const 
 }
 
 //==============================================================================
-std::vector<std::string_view> split(std::string_view const & string, std::string_view const & separator)
+std::vector<std::string_view> split_____________(std::string_view const & string, std::string_view const & separator)
 {
     // locate separators
     std::vector<char const *> separators_ptr{};

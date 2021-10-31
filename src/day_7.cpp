@@ -139,7 +139,7 @@ public:
     //==============================================================================
     Color_Graph(std::string_view const & input)
     {
-        auto const lines{ aoc::split(input) };
+        auto const lines{ aoc::split_____________(input) };
 
         std::vector<Rule> rules{};
         rules.resize(lines.size());

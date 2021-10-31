@@ -83,6 +83,7 @@
 //
 // What do you get if you multiply together the number of trees encountered on each of the listed slopes ?
 
+#include "StringView.hpp"
 #include "utils.hpp"
 #include <resources.hpp>
 
@@ -116,21 +117,19 @@ public:
     explicit Forest(char const * input_file_path)
     {
         auto const input{ aoc::read_file(input_file_path) };
-        auto const lines{ aoc::split(input) };
 
-        m_height = lines.size();
-        m_width = lines.front().size();
-        assert(std::all_of(lines.cbegin() + 1, lines.cend(), [this](std::string_view const & line) {
-            return line.size() == m_width;
-        }));
+        aoc::StringView const view{ input };
+        m_width = view.upTo('\n').size();
+        m_height = view.count('\n') + 1;
 
-        m_data.reserve(m_width * m_height);
-
-        for (auto const & line : lines) {
-            for (auto const & character : line) {
-                m_data.emplace_back(parse_position(character));
+        auto const parse_line = [&](aoc::StringView const & line) {
+            assert(line.size() == m_width);
+            for (auto const & c : line) {
+                m_data.emplace_back(parse_position(c));
             }
-        }
+        };
+
+        view.iterate(parse_line, '\n');
     }
 
     //==============================================================================

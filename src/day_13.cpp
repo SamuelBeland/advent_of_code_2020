@@ -167,7 +167,7 @@ struct Num_Info {
 std::vector<Num_Info> parse_num_infos(std::string_view const & line)
 {
     uint64_t distance_from_last_number{};
-    auto const elements{ aoc::split(line, ",") };
+    auto const elements{ aoc::split_____________(line, ",") };
 
     std::vector<Num_Info> result{};
 
@@ -198,7 +198,7 @@ std::vector<Num_Info> parse_num_infos(std::string_view const & line)
 std::string day_13_a(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const lines{ aoc::split(input) };
+    auto const lines{ aoc::split_____________(input) };
     assert(lines.size() == 2);
 
     int depart_time;
@@ -225,7 +225,7 @@ std::string day_13_a(char const * input_file_path)
 std::string day_13_b(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const lines{ aoc::split(input) };
+    auto const lines{ aoc::split_____________(input) };
     assert(lines.size() == 2);
 
     auto const num_infos{ parse_num_infos(lines.back()) };

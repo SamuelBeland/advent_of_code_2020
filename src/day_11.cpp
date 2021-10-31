@@ -242,7 +242,7 @@ public:
     //==============================================================================
     Ferry(std::string const & input)
     {
-        auto const lines{ aoc::split(input) };
+        auto const lines{ aoc::split_____________(input) };
 
         m_width = lines.front().size();
         m_height = lines.size();

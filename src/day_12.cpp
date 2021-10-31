@@ -214,7 +214,7 @@ Position & apply_step(Position & position, Step const & step)
 std::string day_12_a(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const lines{ aoc::split(input) };
+    auto const lines{ aoc::split_____________(input) };
 
     std::vector<Step> steps{};
     steps.resize(lines.size());
@@ -234,7 +234,7 @@ std::string day_12_a(char const * input_file_path)
 std::string day_12_b(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const lines{ aoc::split(input) };
+    auto const lines{ aoc::split_____________(input) };
 
     std::vector<Step> steps{};
     steps.reserve(lines.size());

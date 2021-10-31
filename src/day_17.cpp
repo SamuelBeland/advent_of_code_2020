@@ -109,7 +109,7 @@ void Space::tick(size_t num_ticks)
 std::unique_ptr<Space> Space::from_string(std::string_view const & input)
 {
     // Parse lines and make sure that they represent a square
-    auto const lines{ aoc::split(input) };
+    auto const lines{ aoc::split_____________(input) };
     assert(!lines.empty());
     auto const width{ lines.front().size() };
     assert(aoc::all_of(lines, [&](std::string_view const & line) { return line.size() == width; }));

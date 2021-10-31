@@ -216,7 +216,7 @@ struct Init_Section {
 //==============================================================================
 std::vector<Init_Section> parse_init_sequence(std::string const & input)
 {
-    auto const lines{ aoc::split(input) };
+    auto const lines{ aoc::split_____________(input) };
     std::vector<Init_Section> result;
 
     for (auto const & line : lines) {

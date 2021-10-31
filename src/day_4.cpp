@@ -128,64 +128,54 @@
 // Count the number of valid passports - those that have all required fields and valid values. Continue to treat cid as
 // optional. In your batch file, how many passports are valid ?
 
+#include "StringView.hpp"
 #include "utils.hpp"
 #include <resources.hpp>
 
 namespace
 {
-template<typename T>
-T parse_string(std::string_view const & string)
-{
-    T value;
-    [[maybe_unused]] auto const from_char_result{
-        std::from_chars(string.data(), string.data() + string.size(), value)
-    };
-    assert(from_char_result.ec == std::errc());
-    return value;
-}
-
 //==============================================================================
-bool is_byr_valid(std::string_view const & string)
+bool is_byr_valid(aoc::StringView const & string)
 {
-    auto const value{ parse_string<unsigned>(string) };
+    auto const value{ string.parse<unsigned>() };
     return value >= 1920 && value <= 2002;
 }
 
 //==============================================================================
-bool is_iyr_valid(std::string_view const & string)
+bool is_iyr_valid(aoc::StringView const & string)
 {
-    auto const value{ parse_string<unsigned>(string) };
+    auto const value{ string.parse<unsigned>() };
     return value >= 2010 && value <= 2020;
 }
 
 //==============================================================================
-bool is_eyr_valid(std::string_view const & string)
+bool is_eyr_valid(aoc::StringView const & string)
 {
-    auto const value{ parse_string<unsigned>(string) };
+    auto const value{ string.parse<unsigned>() };
     return value >= 2020 && value <= 2030;
 }
 
 //==============================================================================
-bool is_hgt_valid(std::string_view const & string)
+bool is_hgt_valid(aoc::StringView const & string)
 {
-    auto const cm_begin{ string.find("cm") };
-    if (cm_begin != std::string_view::npos) {
-        auto const field{ string.substr(0, cm_begin) };
-        auto const value{ parse_string<unsigned>(field) };
+    auto const * cm_begin{ string.find("cm") };
+    if (cm_begin != string.cend()) {
+        aoc::StringView const field{ string.cbegin(), cm_begin };
+        auto const value{ field.parse<unsigned>() };
         return value >= 150 && value <= 193;
     }
-    auto const in_begin{ string.find("in") };
-    if (in_begin == std::string_view::npos) {
+    auto const * in_begin{ string.find("in") };
+    if (in_begin == string.cend()) {
         return false;
     }
 
-    auto const field{ string.substr(0, in_begin) };
-    auto const value{ parse_string<unsigned>(field) };
+    aoc::StringView const field{ string.cbegin(), in_begin };
+    auto const value{ field.parse<unsigned>() };
     return value >= 59 && value <= 76;
 }
 
 //==============================================================================
-bool is_hcl_valid(std::string_view const & string)
+bool is_hcl_valid(aoc::StringView const & string)
 {
     static constexpr unsigned NUM_COLOR_CHARACTERS{ 6 };
 
@@ -193,7 +183,7 @@ bool is_hcl_valid(std::string_view const & string)
         return false;
     }
 
-    auto const * ptr{ string.data() };
+    auto const * ptr{ string.cbegin() };
     if (*ptr++ != '#') {
         return false;
     }
@@ -203,30 +193,28 @@ bool is_hcl_valid(std::string_view const & string)
 }
 
 //==============================================================================
-bool is_ecl_valid(std::string_view const & string)
+bool is_ecl_valid(aoc::StringView const & string)
 {
     return string == "amb" || string == "blu" || string == "brn" || string == "gry" || string == "grn"
            || string == "hzl" || string == "oth";
 }
 
 //==============================================================================
-bool is_pid_valid(std::string_view const & string)
+bool is_pid_valid(aoc::StringView const & string)
 {
     static constexpr unsigned NUM_DIGITS{ 9 };
 
     if (string.size() != NUM_DIGITS) {
         return false;
     }
-    auto const * ptr{ string.data() };
-    return std::all_of(ptr, ptr + string.size(), [](char const character) {
-        return character >= '0' && character <= '9';
-    });
+    static auto constexpr IS_DIGIT = [](char const c) { return c >= '0' && c <= '9'; };
+    return aoc::all_of(string, IS_DIGIT);
 }
 
 //==============================================================================
 struct Constraint {
-    std::string_view id;
-    bool (*validate)(std::string_view const &);
+    aoc::StringView id;
+    bool (*validate)(aoc::StringView const &);
 };
 
 //==============================================================================
@@ -236,29 +224,28 @@ constexpr std::array<Constraint, 7> CONSTRAINTS{ Constraint{ "byr:", is_byr_vali
                                                  Constraint{ "pid:", is_pid_valid } };
 
 //==============================================================================
-bool has_all_mandatory_fields(std::string_view const & entry)
+bool has_all_mandatory_fields(aoc::StringView const & entry)
 {
     return aoc::all_of(CONSTRAINTS, [&entry](Constraint const & constraint) -> bool {
-        return entry.find(constraint.id) != std::string::npos;
+        return entry.find(constraint.id) != entry.cend();
     });
 }
 
 //==============================================================================
-bool satisfies_constraint(std::string_view const & entry, Constraint const & constraint)
+bool satisfies_constraint(aoc::StringView const & entry, Constraint const & constraint)
 {
     static constexpr std::array<char, 2> STOP_CHARS{ ' ', '\n' };
 
-    auto const stop_char_index{ entry.find(constraint.id) };
-    if (stop_char_index == std::string_view::npos) {
+    auto const * stop_char_index{ entry.find(constraint.id) };
+    if (stop_char_index == entry.cend()) {
         return false;
     }
-    auto const * const value_begin{ entry.data() + stop_char_index + constraint.id.size() };
+    auto const * const value_begin{ stop_char_index + constraint.id.size() };
     auto const * const value_end{
-        std::find_first_of(value_begin, entry.data() + entry.size(), STOP_CHARS.cbegin(), STOP_CHARS.cend())
+        std::find_first_of(value_begin, entry.cend(), STOP_CHARS.cbegin(), STOP_CHARS.cend())
     };
-    std::string_view const value_string{ value_begin, aoc::narrow<size_t>(value_end - value_begin) };
-    auto const is_valid{ constraint.validate(value_string) };
-    return is_valid;
+    aoc::StringView const value_string{ value_begin, value_end };
+    return constraint.validate(value_string);
 }
 
 } // namespace
@@ -269,11 +256,12 @@ std::string day_4_a(char const * input_file_path)
     auto const input{ aoc::read_file(input_file_path) };
     auto const entries{ aoc::split(input, "\n\n") };
 
-    auto const valid_count{ aoc::count_if(entries, [](std::string_view const & entry) -> bool {
-        return aoc::all_of(CONSTRAINTS, [&entry](Constraint const & constraint) -> bool {
-            return entry.find(constraint.id) != std::string::npos;
-        });
-    }) };
+    static auto constexpr is_entry_valid = [](aoc::StringView const & entry) -> bool {
+        return aoc::all_of(CONSTRAINTS,
+                           [&entry](Constraint const & constraint) -> bool { return entry.contains(constraint.id); });
+    };
+
+    auto const valid_count{ aoc::count_if(entries, is_entry_valid) };
     return std::to_string(valid_count);
 }
 
@@ -282,10 +270,13 @@ std::string day_4_b(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
     auto const entries{ aoc::split(input, "\n\n") };
-    auto const valid_count{ aoc::count_if(entries, [](std::string_view const & entry) -> bool {
+
+    static auto constexpr is_entry_valid = [](aoc::StringView const & entry) -> bool {
         return aoc::all_of(CONSTRAINTS, [&entry](Constraint const & constraint) -> bool {
             return satisfies_constraint(entry, constraint);
         });
-    }) };
+    };
+
+    auto const valid_count{ aoc::count_if(entries, is_entry_valid) };
     return std::to_string(valid_count);
 }

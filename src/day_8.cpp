@@ -168,7 +168,7 @@ using Memory = std::vector<Instruction>;
 //==============================================================================
 Memory parse_memory(std::string_view const & input)
 {
-    auto const lines{ aoc::split(input) };
+    auto const lines{ aoc::split_____________(input) };
     Memory memory{};
     memory.resize(lines.size());
     aoc::transform(lines, memory, Instruction::from_string);

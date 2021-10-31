@@ -63,6 +63,11 @@ public:
     {
         assert(begin <= end);
     }
+    template<std::size_t SIZE>
+    constexpr StringView(char str[SIZE]) noexcept : m_data(str)
+                                                  , m_size(SIZE - 1)
+    {
+    }
     constexpr StringView(char const * begin, std::size_t const size) noexcept : m_data(begin), m_size(size) {}
     ~StringView() = default;
     //==============================================================================
@@ -127,6 +132,8 @@ public:
     {
         return std::search(cbegin(), cend(), std::boyer_moore_searcher(other.cbegin(), other.cend()));
     }
+    [[nodiscard]] constexpr bool contains(char const c) const noexcept { return find(c) != cend(); }
+    [[nodiscard]] bool contains(StringView const & other) const noexcept { return find(other) != cend(); }
     //==============================================================================
     [[nodiscard]] constexpr char const & front() const noexcept(!detail::IS_DEBUG)
     {
@@ -150,9 +157,6 @@ public:
     }
     [[nodiscard]] StringView startingAfter(StringView const & other) const noexcept
     {
-        // if (other.empty()) {
-        //    return *this;
-        //}
         auto const * find_result{ find(other) };
         auto const * new_begin{ find_result == cend() ? find_result : find_result + other.size() };
         return StringView{ new_begin, cend() };

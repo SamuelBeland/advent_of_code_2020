@@ -87,7 +87,7 @@ seat_id_t get_id(std::string_view const & seat)
 std::string day_5_a(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const lines{ aoc::split(input) };
+    auto const lines{ aoc::split_____________(input) };
     auto const ids = lines | views::transform(get_id);
     auto const max_id{ *aoc::max_element(ids) };
 
@@ -98,7 +98,7 @@ std::string day_5_a(char const * input_file_path)
 std::string day_5_b(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const lines{ aoc::split(input) };
+    auto const lines{ aoc::split_____________(input) };
 
     std::vector<seat_id_t> ids{};
     ids.resize(lines.size());
