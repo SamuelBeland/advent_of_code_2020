@@ -76,6 +76,8 @@ public:
     StringView & operator=(StringView const &) = default;
     StringView & operator=(StringView &&) = default;
     //==============================================================================
+    [[nodiscard]] std::string to_std_string() const { return std::string{ m_data, m_size }; }
+    //==============================================================================
     [[nodiscard]] constexpr char const * begin() const noexcept { return m_data; }
     [[nodiscard]] constexpr char const * end() const noexcept { return m_data + m_size; }
     [[nodiscard]] constexpr char const * cbegin() const noexcept { return m_data; }

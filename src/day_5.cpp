@@ -66,17 +66,17 @@ namespace
 using seat_id_t = int;
 
 //==============================================================================
-seat_id_t get_id(std::string_view const & seat)
+[[nodiscard]] constexpr seat_id_t get_id(aoc::StringView const & seat)
 {
     assert(seat.size() == 10);
 
     seat_id_t result{};
-    aoc::for_each(seat, [&result](char const character) {
+    for (auto const c : seat) {
         result <<= 1;
-        if (character == 'B' || character == 'R') {
+        if (c == 'B' || c == 'R') {
             ++result;
-        };
-    });
+        }
+    }
 
     return result;
 }
@@ -87,8 +87,7 @@ seat_id_t get_id(std::string_view const & seat)
 std::string day_5_a(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const lines{ aoc::split_____________(input) };
-    auto const ids = lines | views::transform(get_id);
+    auto const ids{ aoc::StringView{ input }.iterator_transform(get_id, '\n') };
     auto const max_id{ *aoc::max_element(ids) };
 
     return std::to_string(max_id);
@@ -98,8 +97,7 @@ std::string day_5_a(char const * input_file_path)
 std::string day_5_b(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const lines{ aoc::split_____________(input) };
-
+    auto const lines{ aoc::split(input, '\n') };
     std::vector<seat_id_t> ids{};
     ids.resize(lines.size());
     aoc::transform(lines, ids, get_id);
