@@ -240,9 +240,9 @@ private:
 
 public:
     //==============================================================================
-    Ferry(std::string const & input)
+    Ferry(aoc::StringView const & input)
     {
-        auto const lines{ aoc::split_____________(input) };
+        auto const lines{ input.split('\n') };
 
         m_width = lines.front().size();
         m_height = lines.size();
@@ -262,6 +262,7 @@ public:
     size_t run_line_of_sight() { return run(&Ferry::count_line_of_sight, 5); }
 
 private:
+    //==============================================================================
     size_t run(Counting_Function const counting_function, size_t const tolerance)
     {
         auto old_occupied_count{ evolve(counting_function, tolerance) };
@@ -273,6 +274,8 @@ private:
 
         return new_occupied_count;
     }
+
+    //==============================================================================
     size_t evolve(Counting_Function neighbor_counting_function, size_t const tolerance)
     {
         size_t num_occupied_seats{};
@@ -336,6 +339,8 @@ private:
 
         return count;
     }
+
+    //==============================================================================
     size_t count_line_of_sight(size_t const index) const
     {
         size_t count{};
