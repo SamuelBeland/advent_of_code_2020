@@ -153,4 +153,10 @@ template<typename Coll, typename T>
     return std::upper_bound(coll.cbegin(), coll.cend(), value);
 }
 
+template<typename Coll, typename T>
+[[nodiscard]] auto find(Coll const & coll, T const & value)
+{
+    return std::find(coll.cbegin(), coll.cend(), value);
+}
+
 } // namespace aoc

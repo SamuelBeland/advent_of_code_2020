@@ -184,8 +184,10 @@ public:
     [[nodiscard]] T parse() const noexcept(!detail::IS_DEBUG)
     {
         T value;
-        if constexpr (std::is_same_v<StringView, T> || std::is_same_v<std::string, T>) {
+        if constexpr (std::is_same_v<StringView, T>) {
             value = *this;
+        } else if constexpr (std::is_same_v<std::string, T>) {
+            value = to_std_string();
         } else if constexpr (std::is_same_v<char, T>) {
             assert(m_size == 1);
             value = front();

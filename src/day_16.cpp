@@ -145,11 +145,10 @@ struct Rule {
     }
     [[nodiscard]] bool is_departure() const { return name.find("departure") == 0; }
     //==============================================================================
-    [[nodiscard]] static Rule from_string(std::string_view const & line)
+    [[nodiscard]] static Rule from_string(aoc::StringView const & line)
     {
         Rule result{};
-        aoc::scan(line,
-                  "{}: {}-{} or {}-{}",
+        line.scan("{}: {}-{} or {}-{}",
                   result.name,
                   result.low_range.min,
                   result.low_range.max,
@@ -160,27 +159,21 @@ struct Rule {
 };
 
 //==============================================================================
-[[nodiscard]] std::vector<Rule> parse_rules(std::string_view const & string)
+[[nodiscard]] std::vector<Rule> parse_rules(aoc::StringView const & string)
 {
-    auto const lines{ aoc::split_____________(string) };
-    std::vector<Rule> result{};
-    result.resize(lines.size());
-    aoc::transform(lines, result, Rule::from_string);
-
-    return result;
+    return string.iterate_transform(Rule::from_string, '\n');
 }
 
 //==============================================================================
 using Ticket = std::vector<number_t>;
 
 //==============================================================================
-std::vector<Ticket> parse_tickets(std::string_view const string)
+std::vector<Ticket> parse_tickets(aoc::StringView const string)
 {
-    auto const lines{ aoc::split_____________(string) };
-    std::vector<Ticket> result{ lines.size() };
-    aoc::transform(lines, result, [](std::string_view const & line) {
-        return aoc::scan_number_list<number_t>(line, ',');
-    });
+    auto const lines{ string.split('\n') };
+    std::vector<Ticket> result{};
+    result.resize(lines.size());
+    aoc::transform(lines, result, [](aoc::StringView const & line) { return line.parse_list<number_t>(','); });
     return result;
 }
 
@@ -195,7 +188,7 @@ number_t get_ticket_scanning_error_rate(std::vector<Ticket> const & tickets, std
 
     auto inserter{ std::back_inserter(invalid_entries) };
     for (auto const & ticket : tickets) {
-        std::copy_if(ticket.cbegin(), ticket.cend(), std::back_inserter(invalid_entries), is_invalid_entry);
+        std::copy_if(ticket.cbegin(), ticket.cend(), inserter++, is_invalid_entry);
     }
 
     return aoc::reduce(invalid_entries, number_t{}, std::plus());
@@ -206,7 +199,7 @@ std::vector<size_t> build_index_list(size_t const number_of_items)
 {
     std::vector<size_t> index_list{};
     index_list.resize(number_of_items);
-    std::iota(std::begin(index_list), std::end(index_list), size_t{});
+    aoc::iota(index_list, std::size_t{});
     return index_list;
 }
 
@@ -258,19 +251,18 @@ struct Day_16_Data {
         return departure_rule_indexes;
     }
     //==============================================================================
-    static Day_16_Data from_string(std::string_view const & string)
+    static Day_16_Data from_string(aoc::StringView const & string)
     {
-        std::string_view ticket_fields_string;
-        std::string_view my_ticket_values_string;
-        std::string_view nearby_tickets_values_string;
-        aoc::scan(string,
-                  "{}\n\nyour ticket:\n{}\n\nnearby tickets:\n{}",
-                  ticket_fields_string,
-                  my_ticket_values_string,
-                  nearby_tickets_values_string);
+        aoc::StringView ticket_fields_string;
+        aoc::StringView my_ticket_values_string;
+        aoc::StringView nearby_tickets_values_string;
+        string.scan("{}\n\nyour ticket:\n{}\n\nnearby tickets:\n{}",
+                    ticket_fields_string,
+                    my_ticket_values_string,
+                    nearby_tickets_values_string);
 
         return Day_16_Data{ parse_rules(ticket_fields_string),
-                            aoc::scan_number_list<number_t>(my_ticket_values_string, ','),
+                            my_ticket_values_string.parse_list<number_t>(','),
                             parse_tickets(nearby_tickets_values_string) };
     }
 };
@@ -347,9 +339,7 @@ size_t register_solved_rule(size_t const solved_rule_index,
             continue;
         }
 
-        auto const rule_index_to_erase{
-            std::find(std::cbegin(rule_index_candidates), std::cend(rule_index_candidates), solved_rule_index)
-        };
+        auto const rule_index_to_erase{ aoc::find(rule_index_candidates, solved_rule_index) };
 
         if (rule_index_to_erase == std::cend(rule_index_candidates)) {
             // nothing to erase

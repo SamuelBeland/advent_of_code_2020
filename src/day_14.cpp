@@ -130,7 +130,7 @@ class Memory : public std::unordered_map<uint64_t, uint64_t>
     using unordered_map::unordered_map;
 
 public:
-    uint64_t sum_values() const
+    [[nodiscard]] uint64_t sum_values() const noexcept
     {
         auto const sum{ aoc::transform_reduce(
             *this,
@@ -154,9 +154,9 @@ struct Mask {
     uint64_t ones;
 
     //==============================================================================
-    uint64_t apply_part_a(uint64_t const & value) const { return (value | ones) & ~zeros; }
+    [[nodiscard]] uint64_t apply_part_a(uint64_t const & value) const { return (value | ones) & ~zeros; }
     //==============================================================================
-    uint64_t apply_part_b(uint64_t const & value) const { return (value & zeros) | ones; }
+    [[nodiscard]] uint64_t apply_part_b(uint64_t const & value) const { return (value & zeros) | ones; }
     //==============================================================================
     void register_floating_permutations(std::vector<uint64_t> & out) const
     {
@@ -164,20 +164,20 @@ struct Mask {
         register_floating_permutations_(out, 0, 0);
     }
     //==============================================================================
-    static Mask from_string(std::string_view const & string)
+    [[nodiscard]] static Mask from_string(aoc::StringView const & string)
     {
         assert(string.size() == Mask::LENGTH);
         Mask result{ 0, 0 };
 
-        for (auto it{ string.cbegin() }; it != string.cend(); ++it) {
+        for (auto const c : string) {
             result.ones <<= 1;
             result.zeros <<= 1;
-            if (*it == '1') {
+            if (c == '1') {
                 ++result.ones;
-            } else if (*it == '0') {
+            } else if (c == '0') {
                 ++result.zeros;
             } else {
-                assert(*it == 'X');
+                assert(c == 'X');
             }
         }
 
@@ -214,16 +214,15 @@ struct Init_Section {
 };
 
 //==============================================================================
-std::vector<Init_Section> parse_init_sequence(std::string const & input)
+[[nodiscard]] std::vector<Init_Section> parse_init_sequence(std::string const & input)
 {
-    auto const lines{ aoc::split_____________(input) };
+    auto const lines{ aoc::split(input, '\n') };
     std::vector<Init_Section> result;
 
     for (auto const & line : lines) {
         if (line[1] == 'a') {
             // first word is "mask" : mask definition line
-            std::string_view mask;
-            aoc::scan(line, "mask = {}", mask);
+            auto const mask{ line.startingAfter("mask = ") };
             Init_Section new_init_section;
             new_init_section.mask = Mask::from_string(mask);
             result.push_back(new_init_section);
@@ -232,7 +231,7 @@ std::vector<Init_Section> parse_init_sequence(std::string const & input)
             assert(line[1] == 'e');
             uint64_t address;
             uint64_t value;
-            aoc::scan(line, "mem[{}] = {}", address, value);
+            line.scan("mem[{}] = {}", address, value);
             result.back().operations.push_back(Operation{ address, value });
         }
     }
