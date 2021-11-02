@@ -96,23 +96,27 @@ struct Color_Info {
 };
 
 struct Rule {
-    std::string_view color;
-    aoc::Static_Vector<Color_Ownership<std::string_view>, MAX_OWNED> owned_colors;
+    aoc::StringView color;
+    aoc::Static_Vector<Color_Ownership<aoc::StringView>, MAX_OWNED> owned_colors;
     //==============================================================================
-    static Rule from_string(std::string_view const & string)
+    static Rule from_string(aoc::StringView const & string)
     {
         Rule rule;
-        std::string_view leftover;
-        aoc::scan(string, "{} bags contain {}.", rule.color, leftover);
+        aoc::StringView leftover;
+        string.scan("{} bags contain {}.", rule.color, leftover);
 
-        if (leftover != "no other bags") {
-            aoc::Static_Vector<std::string_view, MAX_OWNED> contained_strings;
-            aoc::scan_number_list(leftover, contained_strings, ", ");
-            for (auto const & contained_string : contained_strings) {
-                Color_Ownership<std::string_view> ownership;
-                aoc::scan(contained_string, "{} {} bag", ownership.quantity, ownership.color);
-                rule.owned_colors.push_back(ownership);
-            }
+        if (leftover == "no other bags") {
+            return rule;
+        }
+
+        aoc::Static_Vector<aoc::StringView, MAX_OWNED> contained_strings;
+
+        leftover.iterate([&](aoc::StringView const & element) { contained_strings.push_back(element); }, ", ");
+
+        for (auto const & contained_string : contained_strings) {
+            Color_Ownership<aoc::StringView> ownership;
+            contained_string.scan("{} {} bag", ownership.quantity, ownership.color);
+            rule.owned_colors.push_back(ownership);
         }
 
         return rule;
@@ -122,7 +126,7 @@ struct Rule {
 //==============================================================================
 class Color_Graph
 {
-    std::unordered_map<std::string_view, color_id_t> m_color_names_to_color_ids{};
+    std::unordered_map<aoc::StringView, color_id_t> m_color_names_to_color_ids{};
     std::vector<Color_Info> m_color_infos;
     color_id_t m_next_id{};
 
@@ -137,9 +141,9 @@ public:
     Color_Graph & operator=(Color_Graph const &) = default;
     Color_Graph & operator=(Color_Graph &&) = default;
     //==============================================================================
-    Color_Graph(std::string_view const & input)
+    Color_Graph(aoc::StringView const & input)
     {
-        auto const lines{ aoc::split_____________(input) };
+        auto const lines{ split(input, '\n') };
 
         std::vector<Rule> rules{};
         rules.resize(lines.size());
@@ -150,7 +154,7 @@ public:
         }
     }
     //==============================================================================
-    size_t get_number_of_colors_that_contain_color(std::string_view const & target_name) const
+    size_t get_number_of_colors_that_contain_color(aoc::StringView const & target_name) const
     {
         assert(m_color_names_to_color_ids.find(target_name) != m_color_names_to_color_ids.cend());
 
@@ -173,7 +177,7 @@ public:
         return colors_that_own_target.size();
     }
     //==============================================================================
-    size_t get_number_of_bags_contained_by_color(std::string_view const & target_name) const
+    size_t get_number_of_bags_contained_by_color(aoc::StringView const & target_name) const
     {
         assert(m_color_names_to_color_ids.find(target_name) != m_color_names_to_color_ids.cend());
         auto const target_id{ m_color_names_to_color_ids.at(target_name) };
@@ -215,7 +219,7 @@ private:
         }
     }
     //==============================================================================
-    color_id_t get_or_add_color_id(std::string_view const & color_name)
+    color_id_t get_or_add_color_id(aoc::StringView const & color_name)
     {
         auto const emplace_result{ m_color_names_to_color_ids.try_emplace(color_name, m_next_id) };
         if (emplace_result.second) {
@@ -226,7 +230,7 @@ private:
     }
 };
 
-constexpr std::string_view TARGET = "shiny gold";
+constexpr aoc::StringView TARGET = "shiny gold";
 
 } // namespace
 

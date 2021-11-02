@@ -299,3 +299,15 @@ void scan_no_prefix(StringView const & string,
 } // namespace detail
 
 } // namespace aoc
+
+namespace std
+{
+template<>
+struct hash<aoc::StringView> {
+    std::size_t operator()(aoc::StringView const & string) const noexcept
+    {
+        return hash<std::string_view>{}(std::string_view{ string.cbegin(), string.size() });
+    }
+};
+
+} // namespace std
