@@ -90,7 +90,7 @@ struct Space {
     [[nodiscard]] size_t num_active_cubes() const { return aoc::count(data, ACTIVE); }
     void tick(size_t num_ticks);
     //==============================================================================
-    static std::unique_ptr<Space> from_string(std::string_view const & input);
+    static std::unique_ptr<Space> from_string(aoc::StringView const & input);
 
 private:
     //==============================================================================
@@ -106,13 +106,13 @@ void Space::tick(size_t num_ticks)
 }
 
 //==============================================================================
-std::unique_ptr<Space> Space::from_string(std::string_view const & input)
+std::unique_ptr<Space> Space::from_string(aoc::StringView const & input)
 {
     // Parse lines and make sure that they represent a square
-    auto const lines{ aoc::split_____________(input) };
+    auto const lines{ input.split('\n') };
     assert(!lines.empty());
     auto const width{ lines.front().size() };
-    assert(aoc::all_of(lines, [&](std::string_view const & line) { return line.size() == width; }));
+    assert(aoc::all_of(lines, [&](aoc::StringView const & line) { return line.size() == width; }));
 
     // We only start with a single slice to parse. The parsed slice is going to be much smaller than the allocated
     // slice, so we should make sure to place it right in the center of our normal (bigger) slice.
@@ -128,7 +128,7 @@ std::unique_ptr<Space> Space::from_string(std::string_view const & input)
 
     auto space{ std::make_unique<Space>() };
 
-    auto const offset{ MAX_WIDTH / 2 * SLICE_SIZE };
+    constexpr auto offset{ MAX_WIDTH / 2 * SLICE_SIZE };
     std::copy_n(std::cbegin(*slice), SLICE_SIZE, std::begin(space->data) + offset);
 
     return space;
