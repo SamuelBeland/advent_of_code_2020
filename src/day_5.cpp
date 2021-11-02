@@ -87,7 +87,7 @@ using seat_id_t = int;
 std::string day_5_a(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const ids{ aoc::StringView{ input }.iterator_transform(get_id, '\n') };
+    auto const ids{ aoc::StringView{ input }.iterate_transform(get_id, '\n') };
     auto const max_id{ *aoc::max_element(ids) };
 
     return std::to_string(max_id);

@@ -84,7 +84,7 @@ template<typename Pred>
 std::string day_2(char const * input_file_path, Pred const & predicate)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const entries{ aoc::StringView{ input }.iterator_transform(Entry::from_string, '\n') };
+    auto const entries{ aoc::StringView{ input }.iterate_transform(Entry::from_string, '\n') };
     auto const count{ aoc::count_if(entries, predicate) };
 
     return std::to_string(count);

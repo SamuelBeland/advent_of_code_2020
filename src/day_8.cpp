@@ -113,7 +113,7 @@ enum class Operation { acc, jmp, nop };
 using argument_t = int;
 
 //==============================================================================
-Operation parse_operation(std::string_view const & string)
+constexpr Operation parse_operation(aoc::StringView const & string)
 {
     assert(string.size() == 3);
     switch (string[0]) {
@@ -132,19 +132,15 @@ Operation parse_operation(std::string_view const & string)
 }
 
 //==============================================================================
-argument_t parse_argument(std::string_view const & string)
+argument_t parse_argument(aoc::StringView const & string)
 {
-    char const * begin{ string.data() };
-    char const * const end{ string.data() + string.size() };
-    if (string[0] == '+') {
-        ++begin;
-    } else {
-        assert(*begin == '-');
-    }
-    argument_t argument;
-    [[maybe_unused]] auto const from_char_result{ std::from_chars(begin, end, argument) };
-    assert(from_char_result.ec == std::errc());
-    return argument;
+    assert(!string.empty());
+    assert(string.front() == '-' || string.front() == '+');
+
+    auto const startsWithPlus{ string.front() == '+' };
+
+    auto const clean_string{ startsWithPlus ? string.removeFromStart(1) : string };
+    return clean_string.parse<argument_t>();
 }
 
 //==============================================================================
@@ -152,12 +148,14 @@ struct Instruction {
     Operation operation;
     argument_t argument;
     //==============================================================================
-    static Instruction from_string(std::string_view const & line)
+    static Instruction from_string(aoc::StringView const & line)
     {
-        std::string_view operation_string;
-        std::string_view argument_string;
-        aoc::scan(line, "{} {}", operation_string, argument_string);
-        Instruction const result{ parse_operation(operation_string), parse_argument(argument_string) };
+        aoc::StringView operation_string;
+        aoc::StringView argument_string;
+        line.scan("{} {}", operation_string, argument_string);
+        auto const operation{ parse_operation(operation_string) };
+        auto const argument{ parse_argument(argument_string) };
+        Instruction const result{ operation, argument };
         return result;
     }
 };
@@ -166,13 +164,9 @@ struct Instruction {
 using Memory = std::vector<Instruction>;
 
 //==============================================================================
-Memory parse_memory(std::string_view const & input)
+Memory parse_memory(aoc::StringView const & input)
 {
-    auto const lines{ aoc::split_____________(input) };
-    Memory memory{};
-    memory.resize(lines.size());
-    aoc::transform(lines, memory, Instruction::from_string);
-    return memory;
+    return input.iterate_transform(Instruction::from_string, '\n');
 }
 
 //==============================================================================
@@ -186,7 +180,7 @@ public:
     //==============================================================================
     enum class Debug_Code { no_error, infinite_loop };
     //==============================================================================
-    Console(Memory memory) : m_memory(std::move(memory)) {}
+    explicit Console(Memory memory) noexcept : m_memory(std::move(memory)) {}
     //==============================================================================
     Debug_Code debug()
     {
@@ -201,7 +195,7 @@ public:
         return m_stack_pointer == m_memory.size() ? Debug_Code::no_error : Debug_Code::infinite_loop;
     }
     //==============================================================================
-    void fix_corrupted_instruction()
+    void fix_corrupted_instruction() noexcept(!aoc::detail::IS_DEBUG)
     {
         auto const swap_operations = [this](size_t const & address) {
             auto & operation{ m_memory[address].operation };

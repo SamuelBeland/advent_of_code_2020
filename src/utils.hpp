@@ -43,16 +43,7 @@ std::vector<std::string_view> split_____________(std::string_view const & string
 template<typename Separator>
 std::vector<aoc::StringView> split(StringView const & string, Separator const & separator)
 {
-    std::vector<aoc::StringView> result{};
-    auto const size{ string.count(separator) + 1 };
-    result.resize(size);
-    auto inserter{ result.begin() };
-
-    auto const add_element_to_result = [&](aoc::StringView const & element) { *inserter++ = element; };
-
-    string.iterate(add_element_to_result, separator);
-
-    return result;
+    return string.split(separator);
 }
 
 //==============================================================================

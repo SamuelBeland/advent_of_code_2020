@@ -248,7 +248,7 @@ public:
     }
 
     template<typename Func, typename Separator>
-    auto iterator_transform(Func const & func, Separator const & separator)
+    auto iterate_transform(Func const & func, Separator const & separator) const noexcept
     {
         using value_type = decltype(func(StringView{}));
         std::vector<value_type> result{};
@@ -258,6 +258,21 @@ public:
         auto const transform_and_add = [&](StringView const & string) { *cur++ = func(string); };
 
         iterate(transform_and_add, separator);
+
+        return result;
+    }
+
+    template<typename Separator>
+    [[nodiscard]] std::vector<StringView> split(Separator const & separator) const noexcept
+    {
+        std::vector<StringView> result{};
+        auto const size{ count(separator) + 1 };
+        result.resize(size);
+        auto inserter{ result.begin() };
+
+        auto const add_element_to_result = [&](StringView const & element) { *inserter++ = element; };
+
+        iterate(add_element_to_result, separator);
 
         return result;
     }

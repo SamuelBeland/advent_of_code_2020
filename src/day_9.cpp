@@ -104,10 +104,10 @@ namespace
 using number_t = size_t;
 
 //==============================================================================
-size_t parse_preamble_size(std::string_view const & line)
+size_t parse_preamble_size(aoc::StringView const & line)
 {
     size_t preamble;
-    aoc::scan(line, "preamble: {}", preamble);
+    line.scan("preamble: {}", preamble);
     return preamble;
 }
 
@@ -198,10 +198,14 @@ number_t find_weakness(number_t const intruder, std::vector<number_t> const & nu
 std::string day_9_a(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const lines{ aoc::split_____________(input) };
+    aoc::StringView const view{ input };
 
-    auto const preamble_size{ parse_preamble_size(lines.front()) };
-    auto const numbers{ aoc::parse_number_list<number_t>(lines.cbegin() + 1, lines.cend()) };
+    auto const * first_line_feed{ view.find('\n') };
+
+    aoc::StringView const numbers_string{ std::next(first_line_feed), view.cend() };
+    aoc::StringView const preamble_string{ view.cbegin(), first_line_feed };
+    auto const preamble_size{ parse_preamble_size(preamble_string) };
+    auto const numbers{ numbers_string.parse_list<number_t>('\n') };
     auto const intruder{ find_intruder(numbers, preamble_size) };
 
     return std::to_string(intruder);
@@ -211,12 +215,16 @@ std::string day_9_a(char const * input_file_path)
 std::string day_9_b(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const lines{ aoc::split_____________(input) };
+    aoc::StringView const view{ input };
 
-    auto const preamble_size{ parse_preamble_size(lines.front()) };
-    auto const numbers{ aoc::parse_number_list<number_t>(lines.cbegin() + 1, lines.cend()) };
+    auto const * first_line_feed{ view.find('\n') };
+
+    aoc::StringView const numbers_string{ std::next(first_line_feed), view.cend() };
+    aoc::StringView const preamble_string{ view.cbegin(), first_line_feed };
+    auto const preamble_size{ parse_preamble_size(preamble_string) };
+    auto const numbers{ numbers_string.parse_list<number_t>('\n') };
     auto const intruder{ find_intruder(numbers, preamble_size) };
-
     auto const weakness{ find_weakness(intruder, numbers) };
+
     return std::to_string(weakness);
 }
