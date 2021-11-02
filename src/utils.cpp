@@ -1,7 +1,5 @@
 #include "utils.hpp"
 
-#include <algorithm>
-#include <cstring>
 #include <fstream>
 
 namespace aoc
@@ -21,66 +19,6 @@ std::string read_file(char const * path)
     result.reserve(size);
 
     result.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-    return result;
-}
-
-//==============================================================================
-std::vector<std::string_view> split_____________(std::string_view const & string, char const separator)
-{
-    // locate separators
-    std::vector<char const *> separators_ptr{};
-    std::for_each(string.cbegin(), string.cend(), [&separators_ptr, separator](char const & character) {
-        if (character == separator) {
-            separators_ptr.push_back(&character);
-        }
-    });
-
-    // insert separated string_views
-    std::vector<std::string_view> result{};
-    result.reserve(separators_ptr.size() + 1);
-
-    auto const * begin{ string.data() };
-    for (auto const * end : separators_ptr) {
-        result.emplace_back(begin, end - begin);
-        begin = end + 1;
-    }
-
-    // insert last element
-    auto const length_of_last_element{ string.data() + string.size() - begin };
-    if (length_of_last_element > 0) {
-        result.emplace_back(begin, length_of_last_element);
-    }
-
-    return result;
-}
-
-//==============================================================================
-std::vector<std::string_view> split_____________(std::string_view const & string, std::string_view const & separator)
-{
-    // locate separators
-    std::vector<char const *> separators_ptr{};
-    size_t current_index{ string.find(separator) };
-    while (current_index != std::string::npos) {
-        separators_ptr.push_back(string.data() + current_index);
-        current_index = string.find(separator, current_index + separator.size());
-    }
-
-    // insert separated string_views
-    std::vector<std::string_view> result{};
-    result.reserve(separators_ptr.size() + 1);
-
-    auto const * begin{ string.data() };
-    for (auto const * end : separators_ptr) {
-        result.emplace_back(begin, end - begin);
-        begin = end + separator.size();
-    }
-
-    // insert last element
-    auto const length_of_last_element{ std::strlen(begin) };
-    if (length_of_last_element > 0) {
-        result.emplace_back(begin, length_of_last_element);
-    }
-
     return result;
 }
 
