@@ -135,16 +135,15 @@
 namespace
 {
 //==============================================================================
-std::vector<int> parse_bus_ids(std::string_view const & line)
+std::vector<int> parse_bus_ids(aoc::StringView const & line)
 {
     assert(line.size() > 0);
 
     std::vector<int> result{};
-    auto const * cur{ line.data() };
-    auto const * const end{ line.data() + line.size() };
+    auto const * cur{ line.cbegin() };
 
-    while (cur < end) {
-        auto const * next{ std::find(cur, end, ',') };
+    while (cur < line.cend()) {
+        auto const * next{ std::find(cur, line.cend(), ',') };
         if (*cur != 'x') {
             int new_id;
             [[maybe_unused]] auto const from_chars_result{ std::from_chars(cur, next, new_id) };
@@ -164,20 +163,16 @@ struct Num_Info {
 };
 
 //==============================================================================
-std::vector<Num_Info> parse_num_infos(std::string_view const & line)
+std::vector<Num_Info> parse_num_infos(aoc::StringView const & line)
 {
     uint64_t distance_from_last_number{};
-    auto const elements{ aoc::split_____________(line, ",") };
+    auto const elements{ line.split(',') };
 
     std::vector<Num_Info> result{};
 
-    auto const parse_element = [&result, &distance_from_last_number](std::string_view const & element) {
+    auto const parse_element = [&result, &distance_from_last_number](aoc::StringView const & element) {
         if (element.front() != 'x') {
-            uint64_t number;
-            [[maybe_unused]] auto const from_chars_result{
-                std::from_chars(element.data(), element.data() + element.size(), number)
-            };
-            assert(from_chars_result.ec == std::errc());
+            auto const number{ element.parse<uint64_t>() };
             result.push_back(Num_Info{ number, distance_from_last_number });
             distance_from_last_number = 0;
         }
@@ -198,12 +193,10 @@ std::vector<Num_Info> parse_num_infos(std::string_view const & line)
 std::string day_13_a(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const lines{ aoc::split_____________(input) };
+    auto const lines{ aoc::split(input, '\n') };
     assert(lines.size() == 2);
 
-    int depart_time;
-    aoc::scan(lines.front(), "{}", depart_time);
-
+    auto const depart_time{ lines.front().parse<int>() };
     auto const bus_ids{ parse_bus_ids(lines.back()) };
 
     int min_wait_time{ depart_time };
@@ -225,7 +218,7 @@ std::string day_13_a(char const * input_file_path)
 std::string day_13_b(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const lines{ aoc::split_____________(input) };
+    auto const lines{ aoc::split(input, '\n') };
     assert(lines.size() == 2);
 
     auto const num_infos{ parse_num_infos(lines.back()) };

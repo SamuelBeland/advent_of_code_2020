@@ -83,33 +83,37 @@
 
 namespace
 {
+//==============================================================================
 enum class Action : char { north = 'N', south = 'S', east = 'E', west = 'W', left = 'L', right = 'R', forward = 'F' };
 
+//==============================================================================
 struct Step {
     Action action;
     int amount;
 };
 
-Step parse_step(std::string_view const & line)
+//==============================================================================
+Step parse_step(aoc::StringView const & line)
 {
     assert(line.size() >= 2);
     auto const action{ static_cast<Action>(line.front()) };
     int amount;
-    [[maybe_unused]] auto const from_chars_result{
-        std::from_chars(line.data() + 1, line.data() + line.size(), amount)
-    };
+    [[maybe_unused]] auto const from_chars_result{ std::from_chars(line.cbegin() + 1, line.cend(), amount) };
     assert(from_chars_result.ec == std::errc());
     Step const step{ action, amount };
     return step;
 }
 
+//==============================================================================
 enum class Direction { north, east, south, west, MAX };
 
+//==============================================================================
 struct Point {
     int x;
     int y;
 
-    void advance(int const amount, Direction const direction_)
+    //==============================================================================
+    void advance(int const amount, Direction const direction_) noexcept
     {
         switch (direction_) {
         case Direction::north:
@@ -127,7 +131,9 @@ struct Point {
         }
         assert(false);
     }
-    Point & rotate_around_origin(int const angle, bool const clockwise)
+
+    //==============================================================================
+    Point & rotate_around_origin(int const angle, bool const clockwise) noexcept
     {
         assert(angle % 90 == 0 && angle >= 0 && angle <= 270);
         auto const number_of_rotations{ angle / 90 };
@@ -145,12 +151,15 @@ struct Point {
         return *this;
     }
 
-    Point operator*(int const amount) const
+    //==============================================================================
+    Point operator*(int const amount) const noexcept
     {
         Point const result{ x * amount, y * amount };
         return result;
     }
-    Point & operator+=(Point const & other)
+
+    //==============================================================================
+    Point & operator+=(Point const & other) noexcept
     {
         x += other.x;
         y += other.y;
@@ -158,13 +167,15 @@ struct Point {
     }
 };
 
+//==============================================================================
 struct Position : Point {
     Direction direction;
-
+    //==============================================================================
     void advance(int const amount) { Point::advance(amount, direction); }
     void advance(int const amount, Direction const direction_) { Point::advance(amount, direction_); }
 };
 
+//==============================================================================
 Direction rotate(Direction const initial_direction, int const amount, bool const clockwise)
 {
     static constexpr auto MAX_DIRECTION{ static_cast<int>(Direction::MAX) };
@@ -179,6 +190,7 @@ Direction rotate(Direction const initial_direction, int const amount, bool const
     return static_cast<Direction>(new_angle);
 }
 
+//==============================================================================
 Position & apply_step(Position & position, Step const & step)
 {
     switch (step.action) {
@@ -214,7 +226,7 @@ Position & apply_step(Position & position, Step const & step)
 std::string day_12_a(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const lines{ aoc::split_____________(input) };
+    auto const lines{ aoc::split(input, '\n') };
 
     std::vector<Step> steps{};
     steps.resize(lines.size());
@@ -234,7 +246,7 @@ std::string day_12_a(char const * input_file_path)
 std::string day_12_b(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const lines{ aoc::split_____________(input) };
+    auto const lines{ aoc::split(input, '\n') };
 
     std::vector<Step> steps{};
     steps.reserve(lines.size());

@@ -240,7 +240,7 @@ private:
 
 public:
     //==============================================================================
-    Ferry(aoc::StringView const & input)
+    Ferry(aoc::StringView const & input) noexcept
     {
         auto const lines{ input.split('\n') };
 
@@ -257,13 +257,13 @@ public:
         }
     }
 
-    size_t run_neighbors() { return run(&Ferry::count_neighbors, 4); }
+    [[nodiscard]] size_t run_neighbors() noexcept { return run(&Ferry::count_neighbors, 4); }
 
-    size_t run_line_of_sight() { return run(&Ferry::count_line_of_sight, 5); }
+    [[nodiscard]] size_t run_line_of_sight() noexcept { return run(&Ferry::count_line_of_sight, 5); }
 
 private:
     //==============================================================================
-    size_t run(Counting_Function const counting_function, size_t const tolerance)
+    [[nodiscard]] size_t run(Counting_Function const counting_function, size_t const tolerance) noexcept
     {
         auto old_occupied_count{ evolve(counting_function, tolerance) };
         auto new_occupied_count{ evolve(counting_function, tolerance) };
@@ -276,7 +276,7 @@ private:
     }
 
     //==============================================================================
-    size_t evolve(Counting_Function neighbor_counting_function, size_t const tolerance)
+    [[nodiscard]] size_t evolve(Counting_Function neighbor_counting_function, size_t const tolerance) noexcept
     {
         size_t num_occupied_seats{};
 
@@ -312,7 +312,8 @@ private:
         return num_occupied_seats;
     }
 
-    size_t count_neighbors(size_t const index) const
+    //==============================================================================
+    [[nodiscard]] size_t count_neighbors(size_t const index) const noexcept
     {
         auto const start_x{ index % m_width };
         auto const min_x{ start_x == 0 ? 0 : start_x - 1 };
@@ -341,7 +342,7 @@ private:
     }
 
     //==============================================================================
-    size_t count_line_of_sight(size_t const index) const
+    [[nodiscard]] size_t count_line_of_sight(size_t const index) const noexcept
     {
         size_t count{};
 
@@ -374,7 +375,7 @@ private:
     }
 
     //==============================================================================
-    static Tile parse_tile(char const character)
+    [[nodiscard]] static Tile parse_tile(char const character) noexcept
     {
         static constexpr char FLOOR = '.';
         static constexpr char EMPTY = 'L';
