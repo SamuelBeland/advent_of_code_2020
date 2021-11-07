@@ -257,6 +257,23 @@ TEST_CASE("day_17_b")
 }
 
 //==============================================================================
+TEST_CASE("day_18_a")
+{
+    REQUIRE(day_18_a(inputs::TEST_18_A_1) == "1");
+    REQUIRE(day_18_a(inputs::TEST_18_A_2) == "8");
+    REQUIRE(day_18_a(inputs::TEST_18_A_3) == "71");
+    REQUIRE(day_18_a(inputs::TEST_18_A_4) == "51");
+    REQUIRE(day_18_a(inputs::TEST_18_A_5) == "26");
+    REQUIRE(day_18_a(inputs::TEST_18_A_6) == "437");
+    REQUIRE(day_18_a(inputs::TEST_18_A_7) == "12240");
+    REQUIRE(day_18_a(inputs::TEST_18_A_8) == "13632");
+}
+
+TEST_CASE("day_18_b")
+{
+}
+
+//==============================================================================
 #ifdef NDEBUG
 TEST_CASE("Benchmarks")
 {
