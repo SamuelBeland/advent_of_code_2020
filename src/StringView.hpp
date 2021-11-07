@@ -88,6 +88,16 @@ public:
         assert(index < m_size);
         return m_data[index];
     }
+    [[nodiscard]] constexpr char const & front() const noexcept(!detail::IS_DEBUG)
+    {
+        assert(!empty());
+        return *m_data;
+    }
+    [[nodiscard]] constexpr char const & back() const noexcept(!detail::IS_DEBUG)
+    {
+        assert(!empty());
+        return m_data[m_size - 1];
+    }
     //==============================================================================
     [[nodiscard]] constexpr bool operator==(StringView const & other) const noexcept
     {
@@ -121,6 +131,11 @@ public:
         }
         return result;
     }
+    [[nodiscard]] bool is_numeric() const noexcept
+    {
+        static constexpr auto IS_NUMERIC = [](char const & c) { return c >= '0' && c <= '9'; };
+        return aoc::all_of(*this, IS_NUMERIC);
+    }
     //==============================================================================
     [[nodiscard]] constexpr char const * find(char const c) const noexcept
     {
@@ -136,11 +151,9 @@ public:
     }
     [[nodiscard]] constexpr bool contains(char const c) const noexcept { return find(c) != cend(); }
     [[nodiscard]] bool contains(StringView const & other) const noexcept { return find(other) != cend(); }
-    //==============================================================================
-    [[nodiscard]] constexpr char const & front() const noexcept(!detail::IS_DEBUG)
+    [[nodiscard]] constexpr bool startsWith(char const c) const noexcept(!detail::IS_DEBUG)
     {
-        assert(m_size != 0);
-        return *m_data;
+        return !empty() && front() == c;
     }
     //==============================================================================
     [[nodiscard]] constexpr StringView upTo(char const c) const noexcept { return StringView{ cbegin(), find(c) }; }
@@ -162,6 +175,11 @@ public:
         auto const * find_result{ find(other) };
         auto const * new_begin{ find_result == cend() ? find_result : find_result + other.size() };
         return StringView{ new_begin, cend() };
+    }
+    [[nodiscard]] StringView cropped(std::size_t const amount) const noexcept(!detail::IS_DEBUG)
+    {
+        assert(m_size >= amount * 2);
+        return StringView{ cbegin() + amount, m_size - amount * 2 };
     }
     //==============================================================================
     [[nodiscard]] constexpr StringView removeFromStart(std::size_t const sizeToRemove) const noexcept
