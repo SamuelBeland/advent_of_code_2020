@@ -6,6 +6,17 @@
 
 namespace aoc
 {
+template<typename It1, typename It2>
+[[nodiscard]] constexpr bool equal(It1 first1, It1 last1, It2 first2) noexcept
+{
+    for (; first1 != last1; ++first1, ++first2) {
+        if (*first1 != *first2) {
+            return false;
+        }
+    }
+    return true;
+}
+
 template<typename Coll, typename Fn>
 void transform(Coll & coll, Fn const & fn)
 {
