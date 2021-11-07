@@ -248,11 +248,12 @@ TEST_CASE("day_17_a")
     REQUIRE(day_17_a(inputs::TEST_17_A_1) == "0");
     REQUIRE(day_17_a(inputs::TEST_17_A_2) == "0");
     REQUIRE(day_17_a(inputs::TEST_17_A_3) == "112");
+    REQUIRE(day_17_a(inputs::DAY_17) == "391");
 }
 
 TEST_CASE("day_17_b")
 {
-    // FAIL_CHECK("Not implemented");
+    REQUIRE(day_17_b(inputs::DAY_17) == "2264");
 }
 
 //==============================================================================
