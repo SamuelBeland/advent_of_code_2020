@@ -18,10 +18,6 @@ namespace detail
 static constexpr auto FORMAT_CAPTURE_PREFIX = '{';
 
 //==============================================================================
-template<class InputIt1, class InputIt2>
-[[nodiscard]] constexpr bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2);
-
-//==============================================================================
 template<typename...>
 void scan_no_prefix(StringView const & /*string*/, StringView const & /*format*/) noexcept(!detail::IS_DEBUG)
 {
@@ -94,7 +90,7 @@ public:
         if (m_size != other.m_size) {
             return false;
         }
-        return detail::equal(cbegin(), cend(), other.cbegin());
+        return aoc::equal(cbegin(), cend(), other.cbegin());
     }
 
     [[nodiscard]] constexpr bool operator!=(StringView const & other) const noexcept { return !(*this == other); }
@@ -282,17 +278,6 @@ public:
 
 namespace detail
 {
-template<class InputIt1, class InputIt2>
-[[nodiscard]] constexpr bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2)
-{
-    for (; first1 != last1; ++first1, ++first2) {
-        if (!(*first1 == *first2)) {
-            return false;
-        }
-    }
-    return true;
-}
-
 template<typename T, typename... Ts>
 void scan_no_prefix(StringView const & string,
                     StringView const & format,
@@ -300,10 +285,10 @@ void scan_no_prefix(StringView const & string,
                     Ts &... other_out_params) noexcept(!detail::IS_DEBUG)
 {
     assert(!string.empty());
-    assert(format.front() == FORMAT_CAPTURE_PREFIX);
+    assert(format.front() == detail::FORMAT_CAPTURE_PREFIX);
     assert(format.size() >= 2);
 
-    auto const suffix_to_match{ StringView{ format.cbegin() + 2 }.upTo(FORMAT_CAPTURE_PREFIX) };
+    auto const suffix_to_match{ StringView{ format.cbegin() + 2 }.upTo(detail::FORMAT_CAPTURE_PREFIX) };
     auto const string_to_parse{ string.upTo(suffix_to_match) };
 
     out_param = string_to_parse.parse<T>();
@@ -314,7 +299,6 @@ void scan_no_prefix(StringView const & string,
     scan_no_prefix(leftover_string, leftover_format, other_out_params...);
 }
 } // namespace detail
-
 } // namespace aoc
 
 namespace std

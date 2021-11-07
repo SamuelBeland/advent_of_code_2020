@@ -64,8 +64,9 @@
 // Your puzzle answer was 2264.
 
 #include "utils.hpp"
-
 #include <resources.hpp>
+
+#include <memory>
 
 namespace
 {
@@ -176,7 +177,7 @@ void insert_at(aoc::StringView const & string, It it)
         auto const linesOffset{ (Dimensions::next::size - linesWidth) / 2 };
 
         for (auto const & line : lines) {
-            insert_at<Dimensions::next>(line, it + linesOffset);
+            insert_at<typename Dimensions::next>(line, it + linesOffset);
             it += Dimensions::next::size;
         }
     }
