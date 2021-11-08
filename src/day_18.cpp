@@ -3,7 +3,12 @@
 
 namespace
 {
-using number_t = unsigned;
+using number_t = uint64_t;
+
+[[nodiscard]] constexpr bool is_numeric(char const c) noexcept
+{
+    return c >= '0' && c <= '9';
+}
 
 //==============================================================================
 number_t apply_op(number_t const & lhs, char const & op, number_t const & rhs)
@@ -15,51 +20,66 @@ number_t apply_op(number_t const & lhs, char const & op, number_t const & rhs)
     return lhs * rhs;
 }
 
-//==============================================================================
-aoc::StringView isolate_subexpression(char const * begin) noexcept(!aoc::detail::IS_DEBUG)
+struct Term {
+    number_t value;
+    char const * end;
+};
+
+[[nodiscard]] char const * get_subexpression_end(char const * begin) noexcept
 {
     assert(*begin == '(');
     unsigned depth{ 1 };
-    auto const * cur{ std::next(begin) };
-    for (; depth > 0; ++cur) {
-        if (*cur == '(') {
-            ++depth;
-            continue;
-        }
-        if (*cur == ')') {
+    do {
+        ++begin;
+        if (*begin == ')') {
             --depth;
+        } else if (*begin == '(') {
+            ++depth;
         }
-    }
-    return aoc::StringView{ begin + 1, cur };
+    } while (depth > 0);
+    return begin;
 }
 
-//==============================================================================
-number_t evaluate(aoc::StringView const & string) noexcept(!aoc::detail::IS_DEBUG)
+[[nodiscard]] number_t evaluate_expression(aoc::StringView const & expression);
+
+[[nodiscard]] Term evaluate_first_expression_term(aoc::StringView const & expression)
 {
-    assert(!string.empty());
-    if (string.is_numeric()) {
-        // just a number!
-        return string.parse<number_t>();
+    Term result;
+
+    assert(!expression.empty());
+    if (expression.startsWith('(')) {
+        // is a sub-expression
+        result.end = get_subexpression_end(expression.cbegin());
+        result.value = evaluate_expression(aoc::StringView{ std::next(expression.cbegin()), result.end });
+        ++result.end;
+        return result;
     }
 
-    auto const lhs_string{ string.front() == '(' ? isolate_subexpression(string.cbegin()) : string.upTo(' ') };
-    auto value{ evaluate(lhs_string) };
+    // is just a numeric value!
+    result.end = std::find_if_not(expression.cbegin(), expression.cend(), is_numeric);
+    result.value = aoc::StringView{ expression.cbegin(), result.end }.parse<number_t>();
 
-    assert(*lhs_string.end() == ' ');
-    auto const * cur{ lhs_string.end() };
+    return result;
+}
 
+[[nodiscard]] number_t evaluate_expression(aoc::StringView const & expression)
+{
+    // eval leftmost term
+    auto leftmost_term{ evaluate_first_expression_term(expression) };
+
+    auto & cur{ leftmost_term.end };
+    auto & value{ leftmost_term.value };
+
+    // eval rhs
     do {
-        ++cur;
-        auto const & op_char{ *cur };
-        assert(*std::next(cur) == ' ');
-        cur += 2;
-        assert(cur < string.cend());
-        auto const rhs_string{ *cur == '(' ? isolate_subexpression(cur)
-                                           : aoc::StringView{ cur, string.cend() }.upTo(' ') };
-        auto const rhs{ evaluate(rhs_string) };
-        value = apply_op(value, op_char, rhs);
-        cur = rhs_string.cend();
-    } while (cur != string.cend());
+        assert(*cur == ' ');
+        auto const & op{ *(cur + 1) };
+        assert(*(cur + 2) == ' ');
+        cur += 3;
+        auto const term{ evaluate_first_expression_term(aoc::StringView{ cur, expression.cend() }) };
+        value = apply_op(value, op, term.value);
+        cur = term.end;
+    } while (cur != expression.cend());
 
     return value;
 }
@@ -70,7 +90,7 @@ number_t evaluate(aoc::StringView const & string) noexcept(!aoc::detail::IS_DEBU
 std::string day_18_a(char const * input_file_path)
 {
     auto const input{ aoc::read_file(input_file_path) };
-    auto const values{ aoc::StringView{ input }.iterate_transform(evaluate, '\n') };
+    auto const values{ aoc::StringView{ input }.iterate_transform(evaluate_expression, '\n') };
     auto const result{ aoc::reduce(values, number_t{}, std::plus()) };
     return std::to_string(result);
 }

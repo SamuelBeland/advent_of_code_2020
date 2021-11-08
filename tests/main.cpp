@@ -267,6 +267,7 @@ TEST_CASE("day_18_a")
     REQUIRE(day_18_a(inputs::TEST_18_A_6) == "437");
     REQUIRE(day_18_a(inputs::TEST_18_A_7) == "12240");
     REQUIRE(day_18_a(inputs::TEST_18_A_8) == "13632");
+    REQUIRE(day_18_a(inputs::DAY_18) == "9535936849815");
 }
 
 TEST_CASE("day_18_b")

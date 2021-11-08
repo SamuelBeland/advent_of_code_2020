@@ -106,9 +106,21 @@ template<typename Coll>
 }
 
 template<typename Coll, typename Pred>
+[[nodiscard]] auto find_if(Coll const & coll, Pred const & pred)
+{
+    return std::find_if(coll.cbegin(), coll.cend(), pred);
+}
+
+template<typename Coll, typename Pred>
 [[nodiscard]] auto find_if(Coll & coll, Pred const & pred)
 {
     return std::find_if(coll.begin(), coll.end(), pred);
+}
+
+template<typename Coll, typename Pred>
+[[nodiscard]] auto find_if_not(Coll const & coll, Pred const & pred)
+{
+    return std::find_if_not(coll.cbegin(), coll.cend(), pred);
 }
 
 template<typename Coll>

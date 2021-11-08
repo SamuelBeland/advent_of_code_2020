@@ -127,12 +127,17 @@ public:
         }
         return result;
     }
-    [[nodiscard]] bool is_numeric() const noexcept
-    {
-        static constexpr auto IS_NUMERIC = [](char const & c) { return c >= '0' && c <= '9'; };
-        return aoc::all_of(*this, IS_NUMERIC);
-    }
     //==============================================================================
+    template<typename Func>
+    [[nodiscard]] constexpr char const * find_if(Func const & func) const noexcept
+    {
+        for (auto const & c : *this) {
+            if (func(c)) {
+                return &c;
+            }
+        }
+        return cend();
+    }
     [[nodiscard]] constexpr char const * find(char const c) const noexcept
     {
         char const * cur{ cbegin() };
