@@ -138,6 +138,16 @@ public:
         }
         return cend();
     }
+    template<typename Func>
+    [[nodiscard]] constexpr char const * find_if_not(Func const & func) const noexcept
+    {
+        for (auto const & c : *this) {
+            if (!func(c)) {
+                return &c;
+            }
+        }
+        return cend();
+    }
     [[nodiscard]] constexpr char const * find(char const c) const noexcept
     {
         char const * cur{ cbegin() };
