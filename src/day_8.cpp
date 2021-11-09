@@ -139,7 +139,7 @@ argument_t parse_argument(aoc::StringView const & string)
 
     auto const startsWithPlus{ string.front() == '+' };
 
-    auto const clean_string{ startsWithPlus ? string.removeFromStart(1) : string };
+    auto const clean_string{ startsWithPlus ? string.remove_from_start(1) : string };
     return clean_string.parse<argument_t>();
 }
 

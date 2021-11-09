@@ -222,7 +222,7 @@ struct Init_Section {
     for (auto const & line : lines) {
         if (line[1] == 'a') {
             // first word is "mask" : mask definition line
-            auto const mask{ line.startingAfter("mask = ") };
+            auto const mask{ line.starting_after("mask = ") };
             Init_Section new_init_section;
             new_init_section.mask = Mask::from_string(mask);
             result.push_back(new_init_section);

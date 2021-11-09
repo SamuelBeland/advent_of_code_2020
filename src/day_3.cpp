@@ -119,7 +119,7 @@ public:
         auto const input{ aoc::read_file(input_file_path) };
 
         aoc::StringView const view{ input };
-        m_width = view.upTo('\n').size();
+        m_width = view.up_to('\n').size();
         m_height = view.count('\n') + 1;
 
         auto const parse_line = [&](aoc::StringView const & line) {

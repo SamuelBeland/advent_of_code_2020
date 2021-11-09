@@ -162,26 +162,38 @@ public:
     }
     [[nodiscard]] constexpr bool contains(char const c) const noexcept { return find(c) != cend(); }
     [[nodiscard]] bool contains(StringView const & other) const noexcept { return find(other) != cend(); }
-    [[nodiscard]] constexpr bool startsWith(char const c) const noexcept(!detail::IS_DEBUG)
+    [[nodiscard]] constexpr bool starts_with(char const c) const noexcept(!detail::IS_DEBUG)
     {
         return !empty() && front() == c;
     }
     //==============================================================================
-    [[nodiscard]] constexpr StringView upTo(char const c) const noexcept { return StringView{ cbegin(), find(c) }; }
-    [[nodiscard]] StringView upTo(StringView const & other) const noexcept
+    [[nodiscard]] constexpr StringView up_to(char const c) const noexcept { return StringView{ cbegin(), find(c) }; }
+    [[nodiscard]] StringView up_to(StringView const & other) const noexcept
     {
         if (other.empty()) {
             return *this;
         }
         return StringView{ cbegin(), find(other) };
     }
-    [[nodiscard]] constexpr StringView startingAfter(char const c) const noexcept
+    template<typename Func>
+    [[nodiscard]] StringView until_false(Func const & predicate) const noexcept
+    {
+        auto const * new_end{ find_if_not(predicate) };
+        return StringView{ cbegin(), cend() };
+    }
+    template<typename Func>
+    [[nodiscard]] StringView until_true(Func const & predicate) const noexcept
+    {
+        auto const * new_end{ find_if(predicate) };
+        return StringView{ cbegin(), cend() };
+    }
+    [[nodiscard]] constexpr StringView starting_after(char const c) const noexcept
     {
         auto const * find_result{ find(c) };
         auto const * new_begin{ find_result == cend() ? find_result : std::next(find_result) };
         return StringView{ new_begin, cend() };
     }
-    [[nodiscard]] StringView startingAfter(StringView const & other) const noexcept
+    [[nodiscard]] StringView starting_after(StringView const & other) const noexcept
     {
         auto const * find_result{ find(other) };
         auto const * new_begin{ find_result == cend() ? find_result : find_result + other.size() };
@@ -193,7 +205,7 @@ public:
         return StringView{ cbegin() + amount, m_size - amount * 2 };
     }
     //==============================================================================
-    [[nodiscard]] constexpr StringView removeFromStart(std::size_t const sizeToRemove) const noexcept
+    [[nodiscard]] constexpr StringView remove_from_start(std::size_t const sizeToRemove) const noexcept
     {
         auto const effectiveSizeToRemove{ std::min(m_size, sizeToRemove) };
         return StringView{ m_data + effectiveSizeToRemove, m_size - effectiveSizeToRemove };
@@ -202,8 +214,8 @@ public:
     template<typename... Ts>
     void scan(StringView const & format, Ts &... out_params) const noexcept(!detail::IS_DEBUG)
     {
-        auto const prefix_to_match{ format.upTo(detail::FORMAT_CAPTURE_PREFIX) };
-        auto const string_without_prefix{ startingAfter(prefix_to_match) };
+        auto const prefix_to_match{ format.up_to(detail::FORMAT_CAPTURE_PREFIX) };
+        auto const string_without_prefix{ starting_after(prefix_to_match) };
         StringView const format_without_prefix{ format.cbegin() + prefix_to_match.size(), format.cend() };
 
         detail::scan_no_prefix(string_without_prefix, format_without_prefix, out_params...);
@@ -260,7 +272,7 @@ public:
         while (cur.cend() != cend()) {
             func(cur);
             StringView const leftover{ std::next(cur.cend()), cend() };
-            cur = leftover.upTo(separator);
+            cur = leftover.up_to(separator);
         }
         func(cur);
     }
@@ -273,7 +285,7 @@ public:
         while (cur.cend() != cend()) {
             func(cur);
             StringView const leftover{ cur.cend() + separator.size(), cend() };
-            cur = leftover.upTo(separator);
+            cur = leftover.up_to(separator);
         }
         func(cur);
     }
@@ -321,8 +333,8 @@ void scan_no_prefix(StringView const & string,
     assert(format.front() == detail::FORMAT_CAPTURE_PREFIX);
     assert(format.size() >= 2);
 
-    auto const suffix_to_match{ StringView{ format.cbegin() + 2 }.upTo(detail::FORMAT_CAPTURE_PREFIX) };
-    auto const string_to_parse{ string.upTo(suffix_to_match) };
+    auto const suffix_to_match{ StringView{ format.cbegin() + 2 }.up_to(detail::FORMAT_CAPTURE_PREFIX) };
+    auto const string_to_parse{ string.up_to(suffix_to_match) };
 
     out_param = string_to_parse.parse<T>();
 
