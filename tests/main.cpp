@@ -281,6 +281,20 @@ TEST_CASE("day_18_b")
 }
 
 //==============================================================================
+TEST_CASE("day_19_a")
+{
+    REQUIRE(day_19_a(inputs::TEST_19_A_1) == "2");
+    REQUIRE(day_19_a(inputs::TEST_19_A_2) == "0");
+    REQUIRE(day_19_a(inputs::TEST_19_A_3) == "2");
+    REQUIRE(day_19_a(inputs::TEST_19_A_4) == "0");
+    // REQUIRE(day_19_a(inputs::DAY_19) == "");
+}
+
+TEST_CASE("day_19_b")
+{
+}
+
+//==============================================================================
 #ifdef NDEBUG
 TEST_CASE("Benchmarks")
 {

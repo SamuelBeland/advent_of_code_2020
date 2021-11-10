@@ -19,9 +19,10 @@ include_directories("include" "${CMAKE_BINARY_DIR}/resources")
 
 add_library(adventlib STATIC)
 target_sources(adventlib PRIVATE
-    "src/utils.cpp" "src/utils.hpp"
-     "src/shortcuts.hpp"
-    "src/StringView.cpp" "src/narrow.hpp"
+    "src/utils.hpp"      "src/utils.cpp"
+    "src/StringView.hpp" "src/StringView.cpp"
+    "src/shortcuts.hpp"
+    "src/narrow.hpp"
 
     "src/day_1.cpp"
     "src/day_2.cpp"
@@ -40,7 +41,8 @@ target_sources(adventlib PRIVATE
     "src/day_15.cpp"
     "src/day_16.cpp"
     "src/day_17.cpp"
-    "src/day_18.cpp")
+    "src/day_18.cpp"
+    "src/day_19.cpp")
 
 add_executable(main)
 target_sources(main PRIVATE "src/main.cpp")

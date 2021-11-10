@@ -6,9 +6,9 @@
 // Unfortunately, it seems like this "math" follows different rules than you remember.
 //
 // The homework (your puzzle input) consists of a series of expressions that consist of addition (+), multiplication
-// (*), and parentheses ((...)). Just like normal math, parentheses indicate that the expression inside must be evaluated
-// before it can be used by the surrounding expression. Addition still finds the sum of the numbers on both sides of the
-// operator, and multiplication still finds the product.
+// (*), and parentheses ((...)). Just like normal math, parentheses indicate that the expression inside must be
+// evaluated before it can be used by the surrounding expression. Addition still finds the sum of the numbers on both
+// sides of the operator, and multiplication still finds the product.
 //
 // However, the rules of operator precedence have changed. Rather than evaluating multiplication before addition, the
 // operators have the same precedence, and are evaluated left-to-right regardless of the order in which they appear.

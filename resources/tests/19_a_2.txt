@@ -1,0 +1,25 @@
+0: 1 2
+1: "a"
+2: 1 3 | 3 1
+3: "b"
+
+aaba
+abaa
+aabb
+abab
+aaab
+aaba
+baab
+baba
+baa
+bab
+bba
+abb
+ab
+ba
+aa
+ab
+ab
+aa
+a
+b
