@@ -210,6 +210,11 @@ public:
         auto const effectiveSizeToRemove{ std::min(m_size, sizeToRemove) };
         return StringView{ m_data + effectiveSizeToRemove, m_size - effectiveSizeToRemove };
     }
+    [[nodiscard]] constexpr StringView remove_from_end(std::size_t const sizeToRemove) const noexcept
+    {
+        auto const effectiveSizeToRemove{ std::min(m_size, sizeToRemove) };
+        return StringView{ m_data, m_size - effectiveSizeToRemove };
+    }
     //==============================================================================
     template<typename... Ts>
     void scan(StringView const & format, Ts &... out_params) const noexcept(!detail::IS_DEBUG)
